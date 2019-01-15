@@ -1,9 +1,14 @@
 package wards.ward;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemEnchantedBook;
@@ -11,11 +16,17 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 public class BlockWard extends Block
 {
+	private final AxisAlignedBB BASE_BOX = new AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 0.125, 1.0);
+	private final AxisAlignedBB RAISED_BASE_BOX = new AxisAlignedBB(0.1875, 0.125, 0.1875, 0.8125, 0.250, 0.8125);
+	private final AxisAlignedBB PILLAR_BOX = new AxisAlignedBB(0.3125, 0.125, 0.3125, 0.6875, 0.8125, 0.6875);
+	
 	public BlockWard()
 	{
 		super(Material.ROCK);
@@ -40,7 +51,7 @@ public class BlockWard extends Block
 				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
 				ward.setBook(ItemStack.EMPTY);
 				
-				return true;
+				return true; 
 			}
 			else if(stack.getItem() instanceof ItemEnchantedBook)
 			{
@@ -48,7 +59,7 @@ public class BlockWard extends Block
 				{
 					InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
 				}
-				ward.setBook(stack);
+				ward.setBook(stack.copy());
 				
 				if(!player.isCreative())
 				{
@@ -60,6 +71,20 @@ public class BlockWard extends Block
 		}
 		
         return false;
+    }
+	
+	@Override
+    public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entityIn, boolean isActualState)
+    {
+		addCollisionBoxToList(pos, entityBox, collidingBoxes, BASE_BOX);
+		addCollisionBoxToList(pos, entityBox, collidingBoxes, RAISED_BASE_BOX);
+		addCollisionBoxToList(pos, entityBox, collidingBoxes, PILLAR_BOX);
+    }
+	
+	@Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
+    {
+		return PILLAR_BOX.grow(0.1);
     }
 	
 	@Override
@@ -75,7 +100,13 @@ public class BlockWard extends Block
 	@Override
     public boolean isFullCube(IBlockState state)
     {
-        return true;
+        return false;
+    }
+	
+	@Override
+    public boolean isOpaqueCube(IBlockState state)
+    {
+        return false;
     }
 	
 	@Override

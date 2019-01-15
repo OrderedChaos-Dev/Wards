@@ -1,4 +1,4 @@
-package wards;
+package wards.ward;
 
 import java.util.Random;
 
@@ -43,6 +43,7 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerPickupXpEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import wards.Wards;
 import wards.effect.WardEffect;
 
 public class WardFunctionEvent
@@ -236,14 +237,14 @@ public class WardFunctionEvent
 						
 						if(potion == WardEffect.byEnchant(Enchantments.LUCK_OF_THE_SEA))
 						{
-							if(EnchantmentHelper.getFishingLuckBonus(rod) <= 0)
+							if(EnchantmentHelper.getFishingLuckBonus(rod) < level)
 							{
 								hook.setLuck(level);
 							}
 						}
 						if(potion == WardEffect.byEnchant(Enchantments.LURE))
 						{
-							if(EnchantmentHelper.getFishingSpeedBonus(rod) <= 0)
+							if(EnchantmentHelper.getFishingSpeedBonus(rod) < level)
 							{
 								hook.setLureSpeed(level);
 							}
@@ -269,7 +270,8 @@ public class WardFunctionEvent
 				Random rand = player.getRNG();
 				if(EnchantmentDurability.negateDamage(player.getHeldItemMainhand(), level, rand))
 				{
-					event.damageRodBy(0);
+					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.UNBREAKING, event.getEntityPlayer().getHeldItemMainhand()) < level)
+						event.damageRodBy(0);
 				}
 			}
 		}
@@ -431,13 +433,7 @@ public class WardFunctionEvent
 				{
 					if(EnchantmentHelper.getDepthStriderModifier(player) < level)
 					{
-						if(level > 3)
-							level = 3;
-						
-						float f1 = 1.0F + (0.1F * level);
-						
-						player.motionX *= f1;
-						player.motionZ *= f1;
+						//handled in WardEffectManager
 					}
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.FROST_WALKER))

@@ -18,7 +18,6 @@ public class WardRegistryEvents
 	@SubscribeEvent
 	public void registerBlocks(RegistryEvent.Register<Block> event)
 	{
-		Wards.ward.setRegistryName(new ResourceLocation(Wards.MODID, "ward"));
 		event.getRegistry().register(Wards.ward);
 	}
 	
