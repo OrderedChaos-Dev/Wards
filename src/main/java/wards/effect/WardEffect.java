@@ -14,7 +14,7 @@ public class WardEffect extends Potion
 		
 		this.enchant = enchant;
 	}
-	
+
 	public static WardEffect byEnchant(Enchantment enchant)
 	{
 		for(Potion effect : WardEffectManager.EFFECTS)

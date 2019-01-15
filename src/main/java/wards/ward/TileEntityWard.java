@@ -42,27 +42,65 @@ public class TileEntityWard extends TileEntity implements ITickable
     public float bookRotation;
     public float bookRotationPrev;
     public float tRot;
+    
+    private int power;
+    private int maxPower;
+    
+    private NBTTagList list;
 	
 	public TileEntityWard()
 	{
 		book = ItemStack.EMPTY;
+		list = new NBTTagList();
+		power = 0;
+		maxPower = 120000;
 	}
 	
 	public void setBook(ItemStack stack)
 	{
 		this.book = stack;
+		setNBTTagList(ItemEnchantedBook.getEnchantments(stack));
 		
-		if(stack == null)
+		if(stack == ItemStack.EMPTY)
 		{
-			this.book = ItemStack.EMPTY;
+			this.list = new NBTTagList();
 		}
 		
 		updateTE();
 	}
 	
+	private void setNBTTagList(NBTTagList list)
+	{
+		this.list = list.copy();
+	}
+	
 	public ItemStack getBook()
 	{
 		return this.book;
+	}
+	
+	public boolean fuelWard()
+	{
+		if(power + 24000 > maxPower)
+		{
+			return false;
+		}
+		else
+		{
+			power += 24000;
+			updateTE();
+			return true;
+		}
+	}
+	
+	public int getPower()
+	{
+		return this.power;
+	}
+	
+	public int getMaxPower()
+	{
+		return this.maxPower;
 	}
 	
 	public EnchantmentData[] getEnchantments()
@@ -98,53 +136,56 @@ public class TileEntityWard extends TileEntity implements ITickable
 		{
 			if(this.canWard())
 			{
-				EnchantmentData[] enchants = getEnchantments();
-				if(enchants.length > 0)
+				if(this.getWorld().getTotalWorldTime() % 100 == 0)
 				{
-					EnchantmentData primaryEnchant = null;
-					EnchantmentData secondaryEnchant = null;
-					
-					if(enchants.length == 1)
-						primaryEnchant = enchants[0];
-					else
+					EnchantmentData[] enchants = getEnchantments();
+					if(enchants.length > 0)
 					{
-						primaryEnchant = enchants[0];
-						secondaryEnchant = enchants[1];
+						EnchantmentData primaryEnchant = null;
+						EnchantmentData secondaryEnchant = null;
 						
-						//grabs the two strongest enchantments
-						for(int i = 1; i < enchants.length; i++)
+						if(enchants.length == 1)
+							primaryEnchant = enchants[0];
+						else
 						{
-							if(primaryEnchant.enchantmentLevel < enchants[i].enchantmentLevel)
+							primaryEnchant = enchants[0];
+							secondaryEnchant = enchants[1];
+							
+							//grabs the two strongest enchantments
+							for(int i = 1; i < enchants.length; i++)
 							{
-								secondaryEnchant = primaryEnchant;
-								primaryEnchant = enchants[i];
-							}
-							else if(secondaryEnchant.enchantmentLevel < enchants[i].enchantmentLevel)
-							{
-								secondaryEnchant = enchants[i];
+								if(primaryEnchant.enchantmentLevel < enchants[i].enchantmentLevel)
+								{
+									secondaryEnchant = primaryEnchant;
+									primaryEnchant = enchants[i];
+								}
+								else if(secondaryEnchant.enchantmentLevel < enchants[i].enchantmentLevel)
+								{
+									secondaryEnchant = enchants[i];
+								}
 							}
 						}
-					}
-					
-					if(secondaryEnchant != null)
-					{
-						if((primaryEnchant.enchantment == Enchantments.FORTUNE && secondaryEnchant.enchantment == Enchantments.SILK_TOUCH)
-								|| (secondaryEnchant.enchantment == Enchantments.FORTUNE && primaryEnchant.enchantment == Enchantments.SILK_TOUCH))
+						
+						if(secondaryEnchant != null)
 						{
-							BlockPos pos = this.getPos();
-							world.createExplosion(null, pos.getX(), pos.getY(), pos.getZ(), 1, true);
-							InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.book);
-							this.setBook(ItemStack.EMPTY);
+							if((primaryEnchant.enchantment == Enchantments.FORTUNE && secondaryEnchant.enchantment == Enchantments.SILK_TOUCH)
+									|| (secondaryEnchant.enchantment == Enchantments.FORTUNE && primaryEnchant.enchantment == Enchantments.SILK_TOUCH))
+							{
+								BlockPos pos = this.getPos();
+								world.createExplosion(null, pos.getX(), pos.getY(), pos.getZ(), 1, true);
+								InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.book);
+								this.setBook(ItemStack.EMPTY);
+							}
+							else
+							{
+								wardArea(primaryEnchant, false);
+								wardArea(secondaryEnchant, true);	
+							}
 						}
 						else
 						{
 							wardArea(primaryEnchant, false);
-							wardArea(secondaryEnchant, true);	
 						}
-					}
-					else
-					{
-						wardArea(primaryEnchant, false);
 					}
 				}
 			}
@@ -180,10 +221,26 @@ public class TileEntityWard extends TileEntity implements ITickable
 		BlockPos pos2 = this.getPos().add(range, range, range);
 		
 		AxisAlignedBB wardArea = new AxisAlignedBB(pos1, pos2);
-		
 		for(EntityPlayer player : this.getWorld().getEntitiesWithinAABB(EntityPlayer.class, wardArea))
 		{
-			player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(enchant), 20, lvl - 1));
+			player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(enchant), 100, lvl - 1, false, false));
+			
+			if(this.world.isRemote)
+			{
+				double xDiff = (player.posX - this.getPos().getX()) / 16;
+				double yDiff = (player.posY - this.getPos().getY()) / 16;
+				double zDiff = (player.posZ - this.getPos().getZ()) / 16;
+				
+				Random rand = this.getWorld().rand;
+				
+				for(double i = 1.0; i <= 16.0; i++)
+				{
+					double x = this.getPos().getX() + (xDiff * i) + 0.5 + (0.5 * rand.nextDouble() - 0.5 * rand.nextDouble());
+					double y = this.getPos().getY() + (yDiff * i) + 0.5;
+					double z = this.getPos().getZ() + (zDiff * i) + 0.5 + (0.5 * rand.nextDouble() - 0.5 * rand.nextDouble());
+					this.getWorld().spawnParticle(EnumParticleTypes.ENCHANTMENT_TABLE, x, y, z, 0, 0, 0);
+				}
+			}
 		}
 	}
 	
@@ -194,29 +251,34 @@ public class TileEntityWard extends TileEntity implements ITickable
 		BlockPos pos1 = this.getPos().add(-range, -range, -range);
 		BlockPos pos2 = this.getPos().add(range, range, range);
 		
-		for(BlockPos pos : BlockPos.getAllInBoxMutable(pos1, pos2))
+		if(this.power <= 0)
 		{
-			if(!Objects.equal(pos, this.getPos()))
+			flag = false;
+		}
+		
+		for(BlockPos blockpos : BlockPos.getAllInBoxMutable(pos1, pos2))
+		{
+			if(!Objects.equal(blockpos, this.getPos()))
 			{
-				if(world.getBlockState(pos).getBlock() instanceof BlockWard)
+				if(this.getWorld().getBlockState(blockpos).getBlock() instanceof BlockWard)
 				{
-					if(((TileEntityWard)world.getTileEntity(pos)).getBook() != ItemStack.EMPTY)
+					if(((TileEntityWard)this.getWorld().getTileEntity(blockpos)).getBook() != ItemStack.EMPTY)
 					{
 						flag = false;
 						
 						//pulses every 2 seconds to show where the interfering ward is
-						if(world.isRemote && world.getTotalWorldTime() % 40 == 0)
+						if(this.getWorld().isRemote && this.getWorld().getTotalWorldTime() % 40 == 0)
 						{
-							double xDiff = pos.getX() - this.getPos().getX();
-							double yDiff = pos.getY() - this.getPos().getY();
-							double zDiff = pos.getZ() - this.getPos().getZ();
+							double xDiff = (blockpos.getX() - this.getPos().getX()) / 8.0;
+							double yDiff = (blockpos.getY() - this.getPos().getY()) / 8.0;
+							double zDiff = (blockpos.getZ() - this.getPos().getZ()) / 8.0;
 							
-							for(int i = 1; i < 9; i++)
+							for(double i = 1.0; i <= 8.0; i++)
 							{
-								double x = this.getPos().getX() + (xDiff / i) + 0.5;
-								double y = this.getPos().getY() + (yDiff / i) + 0.5;
-								double z = this.getPos().getZ() + (zDiff / i) + 0.5;
-								world.spawnParticle(EnumParticleTypes.REDSTONE, x, y, z, 0, 0, 0);
+								double x = this.getPos().getX() + (xDiff * i) + 0.5;
+								double y = this.getPos().getY() + (yDiff * i) + 0.5;
+								double z = this.getPos().getZ() + (zDiff * i) + 0.5;
+								this.getWorld().spawnParticle(EnumParticleTypes.REDSTONE, x, y, z, 0, 0, 0);
 							}
 						}
 					}
@@ -227,7 +289,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		return flag;
 	}
 	
-	//taken from TileEntityEnchantmentTable
+	//taken from TileEntityEnchantmentTable (and modified)
 	public void rotateBook()
 	{
 		Random rand = this.getWorld().rand;
@@ -289,7 +351,7 @@ public class TileEntityWard extends TileEntity implements ITickable
         }
 
         this.bookRotation += f2 * 0.4F;
-        this.bookSpread = MathHelper.clamp(this.bookSpread, 0.0F, 1.0F);
+        this.bookSpread = MathHelper.clamp(this.bookSpread, 0.0F, 1.0F * (float)((double)this.power / this.maxPower));
         ++this.tickCount;
         this.pageFlipPrev = this.pageFlip;
         float f = (this.flipT - this.pageFlip) * 0.4F;
@@ -304,11 +366,29 @@ public class TileEntityWard extends TileEntity implements ITickable
 		super.readFromNBT(compound);
         if(compound.hasKey("Item"))
         {
-        	this.book = new ItemStack(Item.getByNameOrId(compound.getString("Item")), 1, compound.getInteger("Data"));
+        	this.book = new ItemStack(Item.getByNameOrId(compound.getString("Item")), 1);
+        	this.list = (NBTTagList) compound.getTag("Enchantments");
+        	
+            for (int i = 0; i < list.tagCount(); ++i)
+            {
+	            NBTTagCompound nbttagcompound = list.getCompoundTagAt(i);
+	            int id = nbttagcompound.getShort("id");
+	            int lvl = nbttagcompound.getShort("lvl");
+	            
+	            Enchantment enchant = Enchantment.getEnchantmentByID(id);
+	            EnchantmentData data = new EnchantmentData(enchant, lvl);
+	            
+	            ItemEnchantedBook.addEnchantment(book, data);
+            }
         }
         else
         {
         	this.book = ItemStack.EMPTY;
+        }
+        
+        if(compound.hasKey("Power"))
+        {
+        	this.power = compound.getInteger("Power");
         }
 	}
 	
@@ -321,8 +401,9 @@ public class TileEntityWard extends TileEntity implements ITickable
         {
             ResourceLocation resource = Item.REGISTRY.getNameForObject(book.getItem());
             compound.setString("Item", resource == null ? "" : resource.toString());
-            compound.setInteger("Data", book.getMetadata());
+            compound.setTag("Enchantments", list);
         }
+        compound.setInteger("Power", power);
 		
 		return compound;
 	}
@@ -335,15 +416,15 @@ public class TileEntityWard extends TileEntity implements ITickable
     }
 	
 	@Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt)
-    {
-		this.readFromNBT(pkt.getNbtCompound());
-    }
-	
-	@Override
     public NBTTagCompound getUpdateTag()
     {
         return this.writeToNBT(new NBTTagCompound());
+    }
+	
+	@Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt)
+    {
+		this.readFromNBT(pkt.getNbtCompound());
     }
 	
 	public void updateTE()

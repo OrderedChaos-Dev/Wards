@@ -10,12 +10,15 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryHelper;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -38,14 +41,32 @@ public class BlockWard extends Block
 	@Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
+		TileEntityWard ward = (TileEntityWard)world.getTileEntity(pos);
+		ItemStack stack = player.getHeldItem(hand);
+		
 		if(world.isRemote)
 		{
+			if(stack.getItem() == Items.DYE)
+			{
+				if(EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE)
+				{
+					if(ward.getPower() + 24000 <= ward.getMaxPower())
+					{
+						for(int i = 0; i < 16; i++)
+						{
+							double x = pos.getX() + 0.5 + (0.5 * world.rand.nextDouble()) - (0.5 * world.rand.nextDouble());
+							double y = pos.getY() + 0.5 + (0.5 * world.rand.nextDouble()) - (0.5 * world.rand.nextDouble());
+							double z = pos.getZ() + 0.5 + (0.5 * world.rand.nextDouble()) - (0.5 * world.rand.nextDouble());
+							
+							world.spawnParticle(EnumParticleTypes.ENCHANTMENT_TABLE, x, y, z, 0, 0, 0);
+						}
+					}
+				}
+			}
 			return true;
 		}
 		else
 		{
-			TileEntityWard ward = (TileEntityWard)world.getTileEntity(pos);
-			ItemStack stack = player.getHeldItem(hand);
 			if(stack == ItemStack.EMPTY)
 			{
 				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
@@ -67,6 +88,19 @@ public class BlockWard extends Block
 				}
 				
 				return true;
+			}
+			else if(stack.getItem() == Items.DYE)
+			{
+				if(EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE)
+				{
+					if(ward.fuelWard())
+					{
+						if(!player.isCreative())
+						{
+							stack.shrink(1);
+						}
+					}
+				}
 			}
 		}
 		

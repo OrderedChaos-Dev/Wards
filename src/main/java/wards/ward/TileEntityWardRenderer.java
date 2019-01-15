@@ -37,6 +37,7 @@ public class TileEntityWardRenderer  extends TileEntitySpecialRenderer<TileEntit
             float f2 = ward.bookRotationPrev + f1 * partialTicks;
             GlStateManager.rotate(-f2 * (180F / (float)Math.PI), 0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(80.0F, 0.0F, 0.0F, 1.0F);
+            
             this.bindTexture(TEXTURE_BOOK);
             float f3 = ward.pageFlipPrev + (ward.pageFlip - ward.pageFlipPrev) * partialTicks + 0.25F;
             float f4 = ward.pageFlipPrev + (ward.pageFlip - ward.pageFlipPrev) * partialTicks + 0.75F;
