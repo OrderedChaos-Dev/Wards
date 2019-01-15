@@ -103,6 +103,26 @@ public class TileEntityWard extends TileEntity implements ITickable
 		return this.maxPower;
 	}
 	
+	public void consumePower()
+	{
+		if(this.power > 0)
+		{
+			boolean hasBook = false;
+			
+			if(this.book.getItem() instanceof ItemEnchantedBook)
+			{
+				hasBook = true;
+			}
+			else
+			{
+				if(this.getWorld().getTotalWorldTime() % (hasBook ? 1 : 10) == 0)
+				{
+					power--;
+				}
+			}
+		}
+	}
+	
 	public EnchantmentData[] getEnchantments()
 	{
 		if(this.book.getItem() instanceof ItemEnchantedBook)
@@ -206,6 +226,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 				}
 			}
 		}
+		consumePower();
 	}
 	
 	public void wardArea(EnchantmentData enchantData, boolean isSecondary)

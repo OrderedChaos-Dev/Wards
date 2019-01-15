@@ -65,26 +65,32 @@ public class WardFunctionEvent
 				
 				if(potion == WardEffect.byEnchant(Enchantments.PROTECTION))
 				{
-					damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
+					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.PROTECTION, player) < level)
+						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.BLAST_PROTECTION) && source.isExplosion())
 				{
-					damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
+					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.BLAST_PROTECTION, player) < level)
+						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.FIRE_PROTECTION) && source.isFireDamage())
 				{
-					damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
+					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.FIRE_PROTECTION, player) < level)
+						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.PROJECTILE_PROTECTION) && source.isProjectile())
 				{
-					damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
+					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.PROJECTILE_PROTECTION, player) < level)
+						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.FEATHER_FALLING) && source == DamageSource.FALL)
 				{
-					damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
+					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.FEATHER_FALLING, player) < level)
+						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.THORNS) && event.getSource().getTrueSource() != null)
 				{
+					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.THORNS, player) < level)
 					if(player.getEntityWorld().rand.nextInt(6) < 1 + level)
 						event.getSource().getTrueSource().attackEntityFrom(DamageSource.MAGIC, 0.5F * level);
 				}
@@ -123,6 +129,8 @@ public class WardFunctionEvent
 			EntityLivingBase target = (EntityLivingBase)event.getTarget();
 			EntityPlayer player = event.getEntityPlayer();
 			
+			ItemStack weapon = player.getHeldItemMainhand();
+			
 			for(PotionEffect effect : player.getActivePotionEffects())
 			{
 				Potion potion = effect.getPotion();
@@ -131,59 +139,71 @@ public class WardFunctionEvent
 				
 				if(potion == WardEffect.byEnchant(Enchantments.SHARPNESS))
 				{
-					target.attackEntityFrom(DamageSource.MAGIC, (float) (1.0 * level));
+					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.SHARPNESS, weapon) < level)
+						target.attackEntityFrom(DamageSource.MAGIC, (float) (1.0 * level));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.BANE_OF_ARTHROPODS) && creatureAttr == EnumCreatureAttribute.ARTHROPOD)
 				{
-					target.attackEntityFrom(DamageSource.MAGIC, (float) (1.0 * level));
+					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.BANE_OF_ARTHROPODS, weapon) < level)
+						target.attackEntityFrom(DamageSource.MAGIC, (float) (1.0 * level));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.SMITE) && creatureAttr == EnumCreatureAttribute.UNDEAD)
 				{
-					target.attackEntityFrom(DamageSource.MAGIC, (float) (1.0 * level));
+					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.SMITE, weapon) < level)
+						target.attackEntityFrom(DamageSource.MAGIC, (float) (1.0 * level));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.KNOCKBACK))
 				{
-					double xRatio = (double)MathHelper.sin(player.rotationYaw * 0.017453292F);
-					double zRatio = (double)-MathHelper.cos(player.rotationYaw * 0.017453292F);
-					target.knockBack(player, 0.5F * level, xRatio, zRatio);
+					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.KNOCKBACK, weapon) < level)
+					{
+						double xRatio = (double)MathHelper.sin(player.rotationYaw * 0.017453292F);
+						double zRatio = (double)-MathHelper.cos(player.rotationYaw * 0.017453292F);
+						target.knockBack(player, 0.5F * level, xRatio, zRatio);
+					}
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.FIRE_ASPECT))
 				{
-					target.setFire(level * 3);
+					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.FIRE_ASPECT, weapon) < level)
+						target.setFire(level * 3);
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.SWEEPING))
 				{
-					if(player.getEntityWorld().rand.nextInt(10) < 1 + level)
+					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.SWEEPING, weapon) < level)
 					{
-						World world = player.getEntityWorld();
-                        for (EntityLivingBase entity : world.getEntitiesWithinAABB(EntityLivingBase.class, target.getEntityBoundingBox().grow(1.0D, 0.25D, 1.0D)))
-                        {
-                            if (entity != player && entity != target && !player.isOnSameTeam(entity) && player.getDistanceSq(entity) < 9.0D)
-                            {
-            					double xRatio = (double)MathHelper.sin(player.rotationYaw * 0.017453292F);
-            					double zRatio = (double)-MathHelper.cos(player.rotationYaw * 0.017453292F);
-                                entity.knockBack(player, 0.4F, xRatio, zRatio);
-                                entity.attackEntityFrom(DamageSource.causePlayerDamage(player), 1.0F + (0.5F *level));
-                            }
-                        }
-                        double x = player.posX;
-                        double y = player.posY;
-                        double z = player.posZ;
-                        world.playSound((EntityPlayer)null, x, y, z, SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0F, 1.0F);
-                        player.spawnSweepParticles();
+						if(player.getEntityWorld().rand.nextInt(10) < 1 + level)
+						{
+							World world = player.getEntityWorld();
+	                        for (EntityLivingBase entity : world.getEntitiesWithinAABB(EntityLivingBase.class, target.getEntityBoundingBox().grow(1.0D, 0.25D, 1.0D)))
+	                        {
+	                            if (entity != player && entity != target && !player.isOnSameTeam(entity) && player.getDistanceSq(entity) < 9.0D)
+	                            {
+	            					double xRatio = (double)MathHelper.sin(player.rotationYaw * 0.017453292F);
+	            					double zRatio = (double)-MathHelper.cos(player.rotationYaw * 0.017453292F);
+	                                entity.knockBack(player, 0.4F, xRatio, zRatio);
+	                                entity.attackEntityFrom(DamageSource.causePlayerDamage(player), 1.0F + (0.5F *level));
+	                            }
+	                        }
+	                        double x = player.posX;
+	                        double y = player.posY;
+	                        double z = player.posZ;
+	                        world.playSound((EntityPlayer)null, x, y, z, SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, player.getSoundCategory(), 1.0F, 1.0F);
+	                        player.spawnSweepParticles();
+						}	
 					}
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.UNBREAKING))
 				{
-					Random rand = player.getRNG();
-					ItemStack weapon = player.getHeldItemMainhand();
-					
-					if(!weapon.isEmpty() && weapon.isItemDamaged())
+					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.UNBREAKING, weapon) < level)
 					{
-						if(EnchantmentDurability.negateDamage(weapon, level, rand))
+						Random rand = player.getRNG();
+						
+						if(!weapon.isEmpty() && weapon.isItemDamaged())
 						{
-							if(rand.nextBoolean())
-								weapon.setItemDamage(weapon.getItemDamage() - 1);
+							if(EnchantmentDurability.negateDamage(weapon, level, rand))
+							{
+								if(rand.nextBoolean())
+									weapon.setItemDamage(weapon.getItemDamage() - 1);
+							}
 						}
 					}
 				}
@@ -210,7 +230,10 @@ public class WardFunctionEvent
 			}
 			if(potion == WardEffect.byEnchant(Enchantments.EFFICIENCY))
 			{
-				speed += level * 1.0;
+				if(EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, player.getHeldItemMainhand()) < level)
+				{
+					speed += level * 1.0;
+				}
 			}
 		}
 		
@@ -267,11 +290,14 @@ public class WardFunctionEvent
 			
 			if(potion == WardEffect.byEnchant(Enchantments.UNBREAKING))
 			{
-				Random rand = player.getRNG();
-				if(EnchantmentDurability.negateDamage(player.getHeldItemMainhand(), level, rand))
+				if(EnchantmentHelper.getEnchantmentLevel(Enchantments.UNBREAKING, event.getEntityPlayer().getHeldItemMainhand()) < level)
 				{
-					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.UNBREAKING, event.getEntityPlayer().getHeldItemMainhand()) < level)
-						event.damageRodBy(0);
+					Random rand = player.getRNG();
+					if(EnchantmentDurability.negateDamage(player.getHeldItemMainhand(), level, rand))
+					{
+						
+							event.damageRodBy(0);
+					}
 				}
 			}
 		}
@@ -295,6 +321,9 @@ public class WardFunctionEvent
 				while(!stack[slot].isItemDamaged())
 				{
 					slot = rand.nextInt(stack.length);
+					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.MENDING, stack[slot]) > 0)
+						continue;
+					
 					if(count == 10)
 						break;
 					
@@ -343,7 +372,10 @@ public class WardFunctionEvent
 					}
 					if(potion == WardEffect.byEnchant(Enchantments.FLAME))
 					{
-						arrow.setFire(100);
+						if(EnchantmentHelper.getEnchantmentLevel(Enchantments.FLAME, player.getHeldItemMainhand()) < level)
+						{
+							arrow.setFire(100);
+						}
 					}
 				}
 			}
@@ -392,10 +424,10 @@ public class WardFunctionEvent
 			
 			if(potion == WardEffect.byEnchant(Enchantments.UNBREAKING))
 			{
-				Random rand = player.getRNG();
-				if(EnchantmentDurability.negateDamage(bow, level, rand))
+				if(EnchantmentHelper.getEnchantmentLevel(Enchantments.UNBREAKING, bow) < level)
 				{
-					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.UNBREAKING, bow) < level)
+					Random rand = player.getRNG();
+					if(EnchantmentDurability.negateDamage(bow, level, rand))
 					{
 						if(rand.nextBoolean() && bow.isItemDamaged())
 						{
@@ -421,11 +453,14 @@ public class WardFunctionEvent
 				int level = effect.getAmplifier();
 				if(potion == WardEffect.byEnchant(Enchantments.RESPIRATION))
 				{
-					if(player.getAir() < 300 && rand.nextInt(3) == 0)
+					if(EnchantmentHelper.getRespirationModifier(player) < level)
 					{
-						if(rand.nextInt(level + 1) > 0)
+						if(player.getAir() < 300 && rand.nextInt(3) == 0)
 						{
-							player.setAir(player.getAir() + 1);
+							if(rand.nextInt(level + 1) > 0)
+							{
+								player.setAir(player.getAir() + 1);
+							}
 						}
 					}
 				}
@@ -556,9 +591,12 @@ public class WardFunctionEvent
 				Potion potion = effect.getPotion();
 				int level = effect.getAmplifier();
 				
-				if(potion == WardEffect.byEnchant(Enchantments.LOOTING) && event.getLootingLevel() < level)
+				if(potion == WardEffect.byEnchant(Enchantments.LOOTING))
 				{
-					event.setLootingLevel(level);
+					if(event.getLootingLevel() < level)
+					{
+						event.setLootingLevel(level);
+					}
 				}
 			}
 		}
