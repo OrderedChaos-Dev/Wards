@@ -3,13 +3,16 @@ package wards;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraft.block.Block;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import wards.effect.WardEffectManager;
+import wards.ward.BlockWard;
+import wards.ward.TileEntityWard;
 
 @Mod(modid = Wards.MODID, name = Wards.NAME, version = Wards.VERSION)
 public class Wards
@@ -29,15 +32,11 @@ public class Wards
         
         logger.info("pre init!!!!!!!!!!!!!!!!!!!!!!");
         ward = new BlockWard();
+        ward.setCreativeTab(CreativeTabs.MISC);
         GameRegistry.registerTileEntity(TileEntityWard.class, new ResourceLocation(MODID, "ward"));
         WardEffectManager.initEffects();
         
     	MinecraftForge.EVENT_BUS.register(new WardRegistryEvents());
-    }
-
-    @EventHandler
-    public void init(FMLInitializationEvent event)
-    {
-
+    	MinecraftForge.EVENT_BUS.register(new WardFunctionEvent());
     }
 }

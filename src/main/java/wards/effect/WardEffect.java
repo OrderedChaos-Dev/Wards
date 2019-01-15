@@ -1,4 +1,4 @@
-package wards;
+package wards.effect;
 
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.potion.Potion;
@@ -15,7 +15,7 @@ public class WardEffect extends Potion
 		this.enchant = enchant;
 	}
 	
-	public static WardEffect getEffectByEnchantment(Enchantment enchant)
+	public static WardEffect byEnchant(Enchantment enchant)
 	{
 		for(Potion effect : WardEffectManager.EFFECTS)
 		{

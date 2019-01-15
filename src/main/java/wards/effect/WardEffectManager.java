@@ -1,4 +1,4 @@
-package wards;
+package wards.effect;
 
 import java.util.ArrayList;
 
@@ -6,6 +6,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import wards.Wards;
 
 public class WardEffectManager
 {

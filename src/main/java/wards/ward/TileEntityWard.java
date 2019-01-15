@@ -1,10 +1,12 @@
-package wards;
+package wards.ward;
 
 import javax.annotation.Nullable;
 
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentData;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Enchantments;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
@@ -18,10 +20,16 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import wards.effect.WardEffect;
 
 public class TileEntityWard extends TileEntity implements ITickable
 {
 	private ItemStack book;
+	
+	public TileEntityWard()
+	{
+		book = ItemStack.EMPTY;
+	}
 	
 	public void setBook(ItemStack stack)
 	{
@@ -95,10 +103,25 @@ public class TileEntityWard extends TileEntity implements ITickable
 					}
 				}
 				
-				wardArea(primaryEnchant, false);
 				if(secondaryEnchant != null)
 				{
-					wardArea(secondaryEnchant, true);
+					if((primaryEnchant.enchantment == Enchantments.FORTUNE && secondaryEnchant.enchantment == Enchantments.SILK_TOUCH)
+							|| (secondaryEnchant.enchantment == Enchantments.FORTUNE && primaryEnchant.enchantment == Enchantments.SILK_TOUCH))
+					{
+						BlockPos pos = this.getPos();
+						world.createExplosion(null, pos.getX(), pos.getY(), pos.getZ(), 1, true);
+						InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.book);
+						this.setBook(ItemStack.EMPTY);
+					}
+					else
+					{
+						wardArea(primaryEnchant, false);
+						wardArea(secondaryEnchant, true);	
+					}
+				}
+				else
+				{
+					wardArea(primaryEnchant, false);
 				}
 			}
 		}
@@ -107,7 +130,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 	public void wardArea(EnchantmentData enchantData, boolean isSecondary)
 	{
 		Enchantment enchant = enchantData.enchantment;
-		int lvl = isSecondary ? 1 : enchantData.enchantmentLevel + 1;
+		int lvl = isSecondary ? 1 : enchantData.enchantmentLevel;
 		int range = 5 + (lvl * 2);
 		
 		if(lvl > 5)
@@ -120,7 +143,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		
 		for(EntityPlayer player : this.getWorld().getEntitiesWithinAABB(EntityPlayer.class, wardArea))
 		{
-			player.addPotionEffect(new PotionEffect(WardEffect.getEffectByEnchantment(enchant), 100, lvl));
+			player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(enchant), 20, lvl - 1));
 		}
 	}
 	

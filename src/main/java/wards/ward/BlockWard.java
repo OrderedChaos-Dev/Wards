@@ -1,4 +1,4 @@
-package wards;
+package wards.ward;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -39,6 +39,8 @@ public class BlockWard extends Block
 			{
 				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
 				ward.setBook(ItemStack.EMPTY);
+				
+				return true;
 			}
 			else if(stack.getItem() instanceof ItemEnchantedBook)
 			{
@@ -52,6 +54,8 @@ public class BlockWard extends Block
 				{
 					stack.shrink(1);
 				}
+				
+				return true;
 			}
 		}
 		
@@ -62,7 +66,8 @@ public class BlockWard extends Block
     public void breakBlock(World world, BlockPos pos, IBlockState state)
     {
 		TileEntityWard ward = (TileEntityWard)world.getTileEntity(pos);
-		InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
+		if(ward.getBook() != ItemStack.EMPTY)
+			InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
 		
 		super.breakBlock(world, pos, state);
     }
