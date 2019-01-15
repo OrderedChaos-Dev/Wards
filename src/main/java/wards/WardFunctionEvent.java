@@ -2,12 +2,14 @@ package wards;
 
 import java.util.Random;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentDurability;
+import net.minecraft.enchantment.EnchantmentFrostWalker;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureAttribute;
@@ -24,6 +26,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -402,6 +405,22 @@ public class WardFunctionEvent
 						
 						player.motionX *= f1;
 						player.motionZ *= f1;
+					}
+				}
+				if(potion == WardEffect.byEnchant(Enchantments.FROST_WALKER))
+				{
+					BlockPos prevPos = new BlockPos(player.prevPosX, player.prevPosY, player.prevPosZ);
+					BlockPos pos = player.getPosition();
+					
+					if(!EnchantmentHelper.hasFrostWalkerEnchantment(player))
+					{
+						if(!Objects.equal(prevPos, pos))
+							EnchantmentFrostWalker.freezeNearby(player, player.world, player.getPosition(), level);
+					}
+					else if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.FROST_WALKER, player) < level)
+					{
+						if(!Objects.equal(prevPos, pos))
+							EnchantmentFrostWalker.freezeNearby(player, player.world, player.getPosition(), level);
 					}
 				}
 			}
