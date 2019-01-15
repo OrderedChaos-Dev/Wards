@@ -16,8 +16,11 @@ import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.entity.projectile.EntityArrow.PickupStatus;
 import net.minecraft.entity.projectile.EntityFishHook;
+import net.minecraft.entity.projectile.EntityTippedArrow;
 import net.minecraft.init.Enchantments;
+import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemArmor;
@@ -346,6 +349,36 @@ public class WardFunctionEvent
 	}
 	
 	@SubscribeEvent
+	public void handleInfinity(EntityJoinWorldEvent event)
+	{
+		if(event.getEntity() instanceof EntityTippedArrow)
+		{
+			EntityTippedArrow arrow = (EntityTippedArrow)event.getEntity();
+			if(arrow.shootingEntity instanceof EntityPlayer && arrow.getColor() == -1) //-1 is the color value of regular arrows
+			{
+				EntityPlayer player = (EntityPlayer) arrow.shootingEntity;
+				for(PotionEffect effect : player.getActivePotionEffects())
+				{
+					Potion potion = effect.getPotion();
+					
+					if(potion == WardEffect.byEnchant(Enchantments.INFINITY) && !player.isCreative())
+					{
+						if(EnchantmentHelper.getEnchantmentLevel(Enchantments.INFINITY, player.getHeldItemMainhand()) <= 0)
+						{
+							arrow.pickupStatus = PickupStatus.DISALLOWED;
+							
+							if(player.addItemStackToInventory(new ItemStack(Items.ARROW, 1)))
+							{
+								Wards.logger.debug("returned arrow");
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	@SubscribeEvent
 	public void onShootArrow(ArrowLooseEvent event)
 	{
 		EntityPlayer player = event.getEntityPlayer();
@@ -353,11 +386,11 @@ public class WardFunctionEvent
 		{
 			Potion potion = effect.getPotion();
 			int level = effect.getAmplifier();
+			ItemStack bow = event.getBow();
 			
 			if(potion == WardEffect.byEnchant(Enchantments.UNBREAKING))
 			{
 				Random rand = player.getRNG();
-				ItemStack bow = event.getBow();
 				if(EnchantmentDurability.negateDamage(bow, level, rand))
 				{
 					if(EnchantmentHelper.getEnchantmentLevel(Enchantments.UNBREAKING, bow) < level)
@@ -401,7 +434,7 @@ public class WardFunctionEvent
 						if(level > 3)
 							level = 3;
 						
-						float f1 = 0.54600006F * level / 3.0F;
+						float f1 = 1.0F + (0.1F * level);
 						
 						player.motionX *= f1;
 						player.motionZ *= f1;
