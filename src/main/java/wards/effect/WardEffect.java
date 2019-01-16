@@ -11,7 +11,7 @@ public class WardEffect extends Potion
 	{
 		super(false, 8171462);
 		this.setBeneficial();
-		
+		this.setIconIndex(6, 1);
 		this.enchant = enchant;
 	}
 

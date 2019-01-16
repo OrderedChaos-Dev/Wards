@@ -67,14 +67,7 @@ public class BlockWard extends Block
 		}
 		else
 		{
-			if(stack == ItemStack.EMPTY)
-			{
-				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
-				ward.setBook(ItemStack.EMPTY);
-				
-				return true; 
-			}
-			else if(stack.getItem() instanceof ItemEnchantedBook)
+			if(stack.getItem() instanceof ItemEnchantedBook)
 			{
 				if(ward.getBook() != ItemStack.EMPTY)
 				{
@@ -101,6 +94,13 @@ public class BlockWard extends Block
 						}
 					}
 				}
+			}
+			else
+			{
+				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
+				ward.setBook(ItemStack.EMPTY);
+				
+				return true; 
 			}
 		}
         return false;

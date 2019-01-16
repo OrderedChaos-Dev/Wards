@@ -71,22 +71,22 @@ public class WardFunctionEvent
 				if(potion == WardEffect.byEnchant(Enchantments.BLAST_PROTECTION) && source.isExplosion())
 				{
 					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.BLAST_PROTECTION, player) < level)
-						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
+						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.15F));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.FIRE_PROTECTION) && source.isFireDamage())
 				{
 					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.FIRE_PROTECTION, player) < level)
-						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
+						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.15F));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.PROJECTILE_PROTECTION) && source.isProjectile())
 				{
 					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.PROJECTILE_PROTECTION, player) < level)
-						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
+						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.15F));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.FEATHER_FALLING) && source == DamageSource.FALL)
 				{
 					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.FEATHER_FALLING, player) < level)
-						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.10F));
+						damage -= (double)MathHelper.floor(damage * (double)((float)level * 0.15F));
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.THORNS) && event.getSource().getTrueSource() != null)
 				{

@@ -20,7 +20,7 @@ public class WardEffectManager
 	{
 		for(Enchantment enchant : ForgeRegistries.ENCHANTMENTS.getValuesCollection())
 		{
-			String name = enchant.getName().replace("enchantment.", "");
+			String name = enchant.getRegistryName().getResourcePath();
 			Potion effect = new WardEffect(enchant).setPotionName("effect." + name);
 			
 			if(enchant == Enchantments.DEPTH_STRIDER)

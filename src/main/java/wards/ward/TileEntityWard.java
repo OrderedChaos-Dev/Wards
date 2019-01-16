@@ -39,6 +39,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import wards.effect.WardEffect;
 import wards.ward.EnchantmentTypeHelper.EnchantmentType;
 
@@ -210,10 +211,8 @@ public class TileEntityWard extends TileEntity implements ITickable
 								this.setBook(ItemStack.EMPTY);
 							}
 						}
-						else
-						{
-							wardArea(primaryEnchant, secondaryEnchant);
-						}
+						
+						wardArea(primaryEnchant, secondaryEnchant);
 					}
 				}
 			}
@@ -266,7 +265,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 			if(this.world.isRemote)
 			{
 				double xDiff = (player.posX - this.getPos().getX()) / 16;
-				double yDiff = (player.posY - this.getPos().getY()) / 16;
+				double yDiff = (player.posY + 0.5 - this.getPos().getY()) / 16;
 				double zDiff = (player.posZ - this.getPos().getZ()) / 16;
 				
 				Random rand = this.getWorld().rand;
@@ -327,7 +326,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 							}
 							if(type == EnchantmentType.FIRE)
 							{
-								particle = EnumParticleTypes.DRIP_LAVA;
+								particle = EnumParticleTypes.FLAME;
 							}
 							if(type == EnchantmentType.WATER)
 							{
@@ -371,7 +370,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 							}
 							if(type == EnchantmentType.LUCK)
 							{
-								particle = EnumParticleTypes.ENCHANTMENT_TABLE;
+								particle = EnumParticleTypes.TOTEM;
 							}
 							
 							this.getWorld().spawnParticle(particle, xCoord, yCoord, zCoord, 0, 0, 0);
@@ -419,7 +418,16 @@ public class TileEntityWard extends TileEntity implements ITickable
 		}
 		if(type == EnchantmentType.OOF)
 		{
-			mob.knockBack(null, 1.0F, 1, 1);
+			BlockPos pos = this.getPos();
+			Vec3d mobVec = new Vec3d(x, y, z);
+			Vec3d wardVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+			double distance = wardVec.distanceTo(mobVec);
+			
+			Vec3d vec = new Vec3d(pos.getX() - x, pos.getY() - y, pos.getZ() - z);
+			
+			mob.motionX += (-vec.x / 2.5);
+			mob.motionY += (-vec.y / 2.0) / distance;
+			mob.motionZ += (-vec.z / 2.5);
 		}
 		if(type == EnchantmentType.SMITE)
 		{
@@ -455,7 +463,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		}
 		if(type == EnchantmentType.EXPERIENCE)
 		{
-			if(world.rand.nextInt(3) == 0)
+			if(!world.isRemote && world.rand.nextInt(7) == 0)
 			{
 				EntityXPOrb orb = new EntityXPOrb(this.getWorld());
 				orb.xpValue = 1;
@@ -493,20 +501,24 @@ public class TileEntityWard extends TileEntity implements ITickable
 				
 				if(rand.nextInt(100) == 0)
 				{
+					double x = blockpos.getX() + 0.5;
+					double y = blockpos.getY() + 0.5;
+					double z = blockpos.getZ() + 0.5;
+					
 					if(block instanceof BlockCrops)
 					{
 						if(!((BlockCrops)block).isMaxAge(state))
 						{
 							this.getWorld().setBlockState(blockpos, ((BlockCrops)block).withAge(((BlockCrops)block).getMetaFromState(state) + 1));
+							
 							if(world.isRemote)
 							{
-		    					double x = blockpos.getX() + 0.5;
-		    					double y = blockpos.getY() + 0.5;
-		    					double z = blockpos.getZ() + 0.5;
-		    					
-		        	        	double xPos = x + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-		        	        	double zPos = z + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-		    	        		world.spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
+								for(int i = 0; i < 5; i++)
+								{
+			        	        	double xPos = x + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
+			        	        	double zPos = z + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
+			    	        		world.spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
+								}
 							}
 						}
 					}
@@ -515,13 +527,16 @@ public class TileEntityWard extends TileEntity implements ITickable
 						if(state.getValue(BlockStem.AGE) < 7)
 						{
 							this.getWorld().setBlockState(blockpos, state.withProperty(BlockStem.AGE, state.getValue(BlockStem.AGE) + 1));
-	    					double x = blockpos.getX() + 0.5;
-	    					double y = blockpos.getY() + 0.5;
-	    					double z = blockpos.getZ() + 0.5;
-	    					
-	        	        	double xPos = x + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-	        	        	double zPos = z + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-	    	        		world.spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
+							
+							if(world.isRemote)
+							{
+								for(int i = 0; i < 5; i++)
+								{
+			        	        	double xPos = x + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
+			        	        	double zPos = z + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
+			    	        		world.spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
+								}
+							}
 						}
 					}
 				}
