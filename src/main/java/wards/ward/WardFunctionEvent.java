@@ -92,7 +92,7 @@ public class WardFunctionEvent
 				{
 					if(EnchantmentHelper.getMaxEnchantmentLevel(Enchantments.THORNS, player) < level)
 					if(player.getEntityWorld().rand.nextInt(6) < 1 + level)
-						event.getSource().getTrueSource().attackEntityFrom(DamageSource.MAGIC, 0.5F * level);
+						event.getSource().getTrueSource().attackEntityFrom(DamageSource.MAGIC, 1.0F * level);
 				}
 				if(potion == WardEffect.byEnchant(Enchantments.UNBREAKING))
 				{
