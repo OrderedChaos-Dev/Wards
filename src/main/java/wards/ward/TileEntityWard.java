@@ -252,14 +252,17 @@ public class TileEntityWard extends TileEntity implements ITickable
 		AxisAlignedBB wardArea = new AxisAlignedBB(pos1, pos2);
 		for(EntityPlayer player : this.getWorld().getEntitiesWithinAABB(EntityPlayer.class, wardArea))
 		{
-			player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(enchant1), 100, lvl - 1, false, false));
-			if(ed2 != null)
+			if(!this.getWorld().isRemote)
 			{
-				player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(ed2.enchantment), 100, 0, false, false));
-			}
-			if(EnchantmentTypeHelper.getEnchantmentType(enchant1) == EnchantmentType.FORTITUDE)
-			{
-				player.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation("absorption"), 100, 0));
+				player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(enchant1), 100, lvl - 1, false, false));
+				if(ed2 != null)
+				{
+					player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(ed2.enchantment), 100, 0, false, false));
+				}
+				if(EnchantmentTypeHelper.getEnchantmentType(enchant1) == EnchantmentType.FORTITUDE)
+				{
+					player.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation("absorption"), 100, 0));
+				}
 			}
 			
 			if(this.world.isRemote)
