@@ -103,7 +103,6 @@ public class BlockWard extends Block
 				}
 			}
 		}
-		
         return false;
     }
 	
@@ -118,7 +117,7 @@ public class BlockWard extends Block
 	@Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
     {
-		return PILLAR_BOX.grow(0.1);
+		return PILLAR_BOX.grow(0.125);
     }
 	
 	@Override

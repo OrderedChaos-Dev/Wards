@@ -1,14 +1,24 @@
 package wards.ward;
 
+import java.util.List;
 import java.util.Random;
 
 import javax.annotation.Nullable;
 
 import com.google.common.base.Objects;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockCrops;
+import net.minecraft.block.BlockStem;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentData;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EnumCreatureAttribute;
+import net.minecraft.entity.effect.EntityLightningBolt;
+import net.minecraft.entity.item.EntityXPOrb;
+import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Enchantments;
 import net.minecraft.inventory.InventoryHelper;
@@ -19,8 +29,10 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.ResourceLocation;
@@ -28,6 +40,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import wards.effect.WardEffect;
+import wards.ward.EnchantmentTypeHelper.EnchantmentType;
 
 public class TileEntityWard extends TileEntity implements ITickable
 {
@@ -196,15 +209,10 @@ public class TileEntityWard extends TileEntity implements ITickable
 								InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.book);
 								this.setBook(ItemStack.EMPTY);
 							}
-							else
-							{
-								wardArea(primaryEnchant, false);
-								wardArea(secondaryEnchant, true);	
-							}
 						}
 						else
 						{
-							wardArea(primaryEnchant, false);
+							wardArea(primaryEnchant, secondaryEnchant);
 						}
 					}
 				}
@@ -229,10 +237,11 @@ public class TileEntityWard extends TileEntity implements ITickable
 		consumePower();
 	}
 	
-	public void wardArea(EnchantmentData enchantData, boolean isSecondary)
+	public void wardArea(EnchantmentData ed1, EnchantmentData ed2)
 	{
-		Enchantment enchant = enchantData.enchantment;
-		int lvl = isSecondary ? 1 : enchantData.enchantmentLevel;
+		Enchantment enchant1 = ed1.enchantment;
+		int lvl = ed1.enchantmentLevel;
+		
 		int range = 5 + (lvl * 2);
 		
 		if(lvl > 5)
@@ -244,7 +253,15 @@ public class TileEntityWard extends TileEntity implements ITickable
 		AxisAlignedBB wardArea = new AxisAlignedBB(pos1, pos2);
 		for(EntityPlayer player : this.getWorld().getEntitiesWithinAABB(EntityPlayer.class, wardArea))
 		{
-			player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(enchant), 100, lvl - 1, false, false));
+			player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(enchant1), 100, lvl - 1, false, false));
+			if(ed2 != null)
+			{
+				player.addPotionEffect(new PotionEffect(WardEffect.byEnchant(ed2.enchantment), 100, 0, false, false));
+			}
+			if(EnchantmentTypeHelper.getEnchantmentType(enchant1) == EnchantmentType.FORTITUDE)
+			{
+				player.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation("absorption"), 100, 0));
+			}
 			
 			if(this.world.isRemote)
 			{
@@ -256,10 +273,257 @@ public class TileEntityWard extends TileEntity implements ITickable
 				
 				for(double i = 1.0; i <= 16.0; i++)
 				{
-					double x = this.getPos().getX() + (xDiff * i) + 0.5 + (0.5 * rand.nextDouble() - 0.5 * rand.nextDouble());
+					double x = this.getPos().getX() + (xDiff * i) + 0.5 + (0.25 * rand.nextDouble() - 0.25 * rand.nextDouble());
 					double y = this.getPos().getY() + (yDiff * i) + 0.5;
-					double z = this.getPos().getZ() + (zDiff * i) + 0.5 + (0.5 * rand.nextDouble() - 0.5 * rand.nextDouble());
+					double z = this.getPos().getZ() + (zDiff * i) + 0.5 + (0.25 * rand.nextDouble() - 0.25 * rand.nextDouble());
 					this.getWorld().spawnParticle(EnumParticleTypes.ENCHANTMENT_TABLE, x, y, z, 0, 0, 0);
+				}
+			}
+		}
+		
+		handleSpecial(enchant1, range);
+		
+		List<EntityMob> nearbyMobs = this.getWorld().getEntitiesWithinAABB(EntityMob.class, wardArea);
+		
+		if(nearbyMobs.size() > 0)
+		{
+			power -= 10;
+			float damage = lvl;
+			
+			if(ed2 != null)
+			{
+				damage += 0.5F;
+			}
+			
+			for(EntityMob mob : nearbyMobs)
+			{
+				mob.attackEntityFrom(DamageSource.MAGIC, damage);
+				this.handleEnchantAttack(mob, enchant1);
+				
+				if(world.isRemote)
+				{
+					double xDiff = (mob.posX - this.getPos().getX()) / 14.0;
+					double yDiff = (mob.posY + 0.5 - this.getPos().getY()) / 14.0;
+					double zDiff = (mob.posZ - this.getPos().getZ()) / 14.0;
+					
+					for(double i = 1.0; i <= 14.0; i++)
+					{
+						double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
+						double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
+						double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
+						
+						if(world.rand.nextBoolean())
+						{
+							this.getWorld().spawnParticle(EnumParticleTypes.CRIT_MAGIC, xCoord, yCoord, zCoord, 0, 0, 0);
+						}
+						else
+						{
+							EnumParticleTypes particle = EnumParticleTypes.CRIT_MAGIC;;
+							EnchantmentType type = EnchantmentTypeHelper.getEnchantmentType(enchant1);
+							
+							if(type == EnchantmentType.GENERIC)
+							{
+								particle = EnumParticleTypes.CRIT;
+							}
+							if(type == EnchantmentType.FIRE)
+							{
+								particle = EnumParticleTypes.DRIP_LAVA;
+							}
+							if(type == EnchantmentType.WATER)
+							{
+								particle = EnumParticleTypes.WATER_SPLASH;
+							}
+							if(type == EnchantmentType.FROST)
+							{
+								particle = EnumParticleTypes.SNOWBALL;
+							}
+							if(type == EnchantmentType.EXPLOSION)
+							{
+								particle = EnumParticleTypes.SMOKE_NORMAL;
+							}
+							if(type == EnchantmentType.KNOCKUP)
+							{
+								particle = EnumParticleTypes.CLOUD;
+							}
+							if(type == EnchantmentType.OOF)
+							{
+								particle = EnumParticleTypes.DRAGON_BREATH;
+							}
+							if(type == EnchantmentType.SMITE && mob.getCreatureAttribute() == EnumCreatureAttribute.UNDEAD)
+							{
+								particle = EnumParticleTypes.END_ROD;
+							}
+							if(type == EnchantmentType.ARTHROPODS && mob.getCreatureAttribute() == EnumCreatureAttribute.ARTHROPOD)
+							{
+								particle = EnumParticleTypes.REDSTONE;
+							}
+							if(type == EnchantmentType.SWEEPING)
+							{
+								particle = EnumParticleTypes.SPELL_INSTANT;
+							}
+							if(type == EnchantmentType.EXPERIENCE)
+							{
+								particle = EnumParticleTypes.VILLAGER_HAPPY;
+							}
+							if(type == EnchantmentType.CURSE)
+							{
+								particle = EnumParticleTypes.SUSPENDED_DEPTH;
+							}
+							if(type == EnchantmentType.LUCK)
+							{
+								particle = EnumParticleTypes.ENCHANTMENT_TABLE;
+							}
+							
+							this.getWorld().spawnParticle(particle, xCoord, yCoord, zCoord, 0, 0, 0);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public void handleEnchantAttack(EntityMob mob, Enchantment enchant)
+	{
+		EnchantmentType type = EnchantmentTypeHelper.getEnchantmentType(enchant);
+		double x = mob.posX;
+		double y = mob.posY;
+		double z = mob.posZ;
+		
+		if(type == EnchantmentType.GENERIC)
+		{
+			mob.attackEntityFrom(DamageSource.MAGIC, 1.0F);
+		}
+		if(type == EnchantmentType.FIRE)
+		{
+			mob.setFire(5);
+		}
+		if(type == EnchantmentType.WATER)
+		{
+			if(mob.isInWater() || this.getWorld().getBlockState(mob.getPosition()).getMaterial() == Material.WATER)
+				mob.attackEntityFrom(DamageSource.MAGIC, 2.0F);
+		}
+		if(type == EnchantmentType.FROST)
+		{
+			mob.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation("slowness"), 100, 0));
+		}
+		if(type == EnchantmentType.EXPLOSION)
+		{
+			if(this.getWorld().rand.nextInt(15) == 0)
+			{
+				this.getWorld().createExplosion(mob, x, y + 0.3, z, 1.0F, false);
+			}
+		}
+		if(type == EnchantmentType.KNOCKUP)
+		{
+			mob.motionY += 1.0;
+		}
+		if(type == EnchantmentType.OOF)
+		{
+			mob.knockBack(null, 1.0F, 1, 1);
+		}
+		if(type == EnchantmentType.SMITE)
+		{
+			if(mob.getCreatureAttribute() == EnumCreatureAttribute.UNDEAD)
+			{
+				if(this.getWorld().rand.nextInt(100) == 0)
+				{
+					this.getWorld().spawnEntity(new EntityLightningBolt(this.getWorld(), x, y, z, false));
+				}
+				else
+				{
+					mob.attackEntityFrom(DamageSource.MAGIC, 2.0F);
+				}
+			}
+		}
+		if(type == EnchantmentType.ARTHROPODS)
+		{
+			if(mob.getCreatureAttribute() == EnumCreatureAttribute.ARTHROPOD)
+			{
+				mob.attackEntityFrom(DamageSource.MAGIC, 2.0F);
+			}
+		}
+		if(type == EnchantmentType.SWEEPING)
+		{
+			AxisAlignedBB bounds = new AxisAlignedBB(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
+			for(Entity entity : world.getEntitiesWithinAABBExcludingEntity(mob, bounds))
+			{
+				if(entity instanceof EntityMob)
+				{
+					((EntityMob)entity).attackEntityFrom(DamageSource.MAGIC, 1.0F);
+				}
+			}
+		}
+		if(type == EnchantmentType.EXPERIENCE)
+		{
+			if(world.rand.nextInt(3) == 0)
+			{
+				EntityXPOrb orb = new EntityXPOrb(this.getWorld());
+				orb.xpValue = 1;
+				orb.setPositionAndRotation(x, y, z, mob.rotationYawHead, mob.rotationPitch);
+				this.getWorld().spawnEntity(orb);
+			}
+		}
+		if(type == EnchantmentType.CURSE)
+		{
+			mob.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation("wither"), 100, 0));
+		}
+		if(type == EnchantmentType.LUCK)
+		{
+			if(this.getWorld().rand.nextInt(100) == 0)
+			{
+				mob.attackEntityFrom(DamageSource.MAGIC, 25.0F);
+			}
+		}
+	}
+	
+	public void handleSpecial(Enchantment enchant, int range)
+	{
+		EnchantmentType type = EnchantmentTypeHelper.getEnchantmentType(enchant);
+		Random rand = this.getWorld().rand;
+		
+		if(type == EnchantmentType.WATER)
+		{
+			BlockPos pos1 = this.getPos().add(-range, -range, -range);
+			BlockPos pos2 = this.getPos().add(range, range, range);
+			
+			for(BlockPos blockpos : BlockPos.getAllInBoxMutable(pos1, pos2))
+			{
+				IBlockState state = this.getWorld().getBlockState(blockpos);
+				Block block = state.getBlock();
+				
+				if(rand.nextInt(100) == 0)
+				{
+					if(block instanceof BlockCrops)
+					{
+						if(!((BlockCrops)block).isMaxAge(state))
+						{
+							this.getWorld().setBlockState(blockpos, ((BlockCrops)block).withAge(((BlockCrops)block).getMetaFromState(state) + 1));
+							if(world.isRemote)
+							{
+		    					double x = blockpos.getX() + 0.5;
+		    					double y = blockpos.getY() + 0.5;
+		    					double z = blockpos.getZ() + 0.5;
+		    					
+		        	        	double xPos = x + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
+		        	        	double zPos = z + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
+		    	        		world.spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
+							}
+						}
+					}
+					if((block instanceof BlockStem))
+					{
+						if(state.getValue(BlockStem.AGE) < 7)
+						{
+							this.getWorld().setBlockState(blockpos, state.withProperty(BlockStem.AGE, state.getValue(BlockStem.AGE) + 1));
+	    					double x = blockpos.getX() + 0.5;
+	    					double y = blockpos.getY() + 0.5;
+	    					double z = blockpos.getZ() + 0.5;
+	    					
+	        	        	double xPos = x + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
+	        	        	double zPos = z + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
+	    	        		world.spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
+						}
+					}
 				}
 			}
 		}
@@ -283,12 +547,12 @@ public class TileEntityWard extends TileEntity implements ITickable
 			{
 				if(this.getWorld().getBlockState(blockpos).getBlock() instanceof BlockWard)
 				{
-					if(((TileEntityWard)this.getWorld().getTileEntity(blockpos)).getBook() != ItemStack.EMPTY)
+					if(((TileEntityWard)this.getWorld().getTileEntity(blockpos)).getBook().getItem() instanceof ItemEnchantedBook)
 					{
 						flag = false;
 						
 						//pulses every 2 seconds to show where the interfering ward is
-						if(this.getWorld().isRemote && this.getWorld().getTotalWorldTime() % 40 == 0)
+						if(!flag && this.getWorld().isRemote && this.getWorld().getTotalWorldTime() % 40 == 0)
 						{
 							double xDiff = (blockpos.getX() - this.getPos().getX()) / 8.0;
 							double yDiff = (blockpos.getY() - this.getPos().getY()) / 8.0;
