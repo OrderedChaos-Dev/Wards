@@ -2,8 +2,8 @@ package wards;
 
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
-import wards.ward.TileEntityWard;
-import wards.ward.TileEntityWardRenderer;
+import wards.block.TileEntityWard;
+import wards.client.TileEntityWardRenderer;
 
 public class ClientProxy implements ICommonProxy
 {

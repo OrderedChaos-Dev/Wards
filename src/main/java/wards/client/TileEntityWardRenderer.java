@@ -1,4 +1,4 @@
-package wards.ward;
+package wards.client;
 
 import net.minecraft.client.model.ModelBook;
 import net.minecraft.client.renderer.GlStateManager;
@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import wards.block.TileEntityWard;
 
 public class TileEntityWardRenderer  extends TileEntitySpecialRenderer<TileEntityWard>
 {

@@ -12,10 +12,10 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import wards.block.BlockWard;
+import wards.block.TileEntityWard;
 import wards.effect.WardEffectManager;
-import wards.ward.BlockWard;
-import wards.ward.TileEntityWard;
-import wards.ward.WardFunctionEvent;
+import wards.function.WardFunctionEvent;
 
 @Mod(modid = Wards.MODID, name = Wards.NAME, version = Wards.VERSION)
 public class Wards

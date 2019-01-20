@@ -1,4 +1,4 @@
-package wards.ward;
+package wards.block;
 
 import java.util.List;
 import java.util.Random;
@@ -41,7 +41,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import wards.effect.WardEffect;
-import wards.ward.EnchantmentTypeHelper.EnchantmentType;
+import wards.function.EnchantmentTypeHelper;
+import wards.function.EnchantmentTypeHelper.EnchantmentType;
 
 public class TileEntityWard extends TileEntity implements ITickable
 {
@@ -206,29 +207,29 @@ public class TileEntityWard extends TileEntity implements ITickable
 									|| (secondaryEnchant.enchantment == Enchantments.FORTUNE && primaryEnchant.enchantment == Enchantments.SILK_TOUCH))
 							{
 								BlockPos pos = this.getPos();
-								world.createExplosion(null, pos.getX(), pos.getY(), pos.getZ(), 1, true);
+								this.getWorld().createExplosion(null, pos.getX(), pos.getY(), pos.getZ(), 1, true);
 								InventoryHelper.spawnItemStack(getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.book);
 								this.setBook(ItemStack.EMPTY);
 							}
 						}
 						
-						wardArea(primaryEnchant, secondaryEnchant);
+						this.wardArea(primaryEnchant, secondaryEnchant);
 					}
 				}
 			}
 			else
 			{
-				if(world.isRemote)
+				if(this.getWorld().isRemote)
 				{
-    	        	if(world.rand.nextBoolean())
+    	        	if(this.getWorld().rand.nextBoolean())
     	        	{
-    					double x = pos.getX() + 0.5;
-    					double y = pos.getY() + 0.8;
-    					double z = pos.getZ() + 0.5;
+    					double x = this.getPos().getX() + 0.5;
+    					double y = this.getPos().getY() + 0.8;
+    					double z = this.getPos().getZ() + 0.5;
     					
-        	        	double xPos = x + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-        	        	double zPos = z + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-    	        		world.spawnParticle(EnumParticleTypes.REDSTONE, xPos, y, zPos, 0, 0, 0);
+        	        	double xPos = x + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
+        	        	double zPos = z + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
+        	        	this.getWorld().spawnParticle(EnumParticleTypes.REDSTONE, xPos, y, zPos, 0, 0, 0);
     	        	}
 				}
 			}
@@ -265,7 +266,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 				}
 			}
 			
-			if(this.world.isRemote)
+			if(this.getWorld().isRemote)
 			{
 				double xDiff = (player.posX - this.getPos().getX()) / 16;
 				double yDiff = (player.posY + 0.5 - this.getPos().getY()) / 16;
@@ -283,7 +284,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 			}
 		}
 		
-		handleSpecial(enchant1, range);
+		this.handleSpecial(enchant1, range);
 		
 		List<EntityMob> nearbyMobs = this.getWorld().getEntitiesWithinAABB(EntityMob.class, wardArea);
 		
@@ -302,82 +303,21 @@ public class TileEntityWard extends TileEntity implements ITickable
 				mob.attackEntityFrom(DamageSource.MAGIC, damage);
 				this.handleEnchantAttack(mob, enchant1);
 				
-				if(world.isRemote)
+				if(this.getWorld().isRemote)
 				{
 					double xDiff = (mob.posX - this.getPos().getX()) / 14.0;
 					double yDiff = (mob.posY + 0.5 - this.getPos().getY()) / 14.0;
 					double zDiff = (mob.posZ - this.getPos().getZ()) / 14.0;
+					EnumParticleTypes[] particles = EnchantmentTypeHelper.getParticles(enchant1);
 					
-					for(double i = 1.0; i <= 14.0; i++)
+					for(double zapCount = 1.0; zapCount <= 14.0; zapCount++) //zap!
 					{
-						double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
-						double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
-						double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
+						double xCoord = this.getPos().getX() + (xDiff * zapCount) + 0.5;
+						double yCoord = this.getPos().getY() + (yDiff * zapCount) + 0.5;
+						double zCoord = this.getPos().getZ() + (zDiff * zapCount) + 0.5;
 						
-						if(world.rand.nextBoolean())
-						{
-							this.getWorld().spawnParticle(EnumParticleTypes.CRIT_MAGIC, xCoord, yCoord, zCoord, 0, 0, 0);
-						}
-						else
-						{
-							EnumParticleTypes particle = EnumParticleTypes.CRIT_MAGIC;;
-							EnchantmentType type = EnchantmentTypeHelper.getEnchantmentType(enchant1);
-							
-							if(type == EnchantmentType.GENERIC)
-							{
-								particle = EnumParticleTypes.CRIT;
-							}
-							if(type == EnchantmentType.FIRE)
-							{
-								particle = EnumParticleTypes.FLAME;
-							}
-							if(type == EnchantmentType.WATER)
-							{
-								particle = EnumParticleTypes.WATER_SPLASH;
-							}
-							if(type == EnchantmentType.FROST)
-							{
-								particle = EnumParticleTypes.SNOWBALL;
-							}
-							if(type == EnchantmentType.EXPLOSION)
-							{
-								particle = EnumParticleTypes.SMOKE_NORMAL;
-							}
-							if(type == EnchantmentType.KNOCKUP)
-							{
-								particle = EnumParticleTypes.CLOUD;
-							}
-							if(type == EnchantmentType.OOF)
-							{
-								particle = EnumParticleTypes.DRAGON_BREATH;
-							}
-							if(type == EnchantmentType.SMITE && mob.getCreatureAttribute() == EnumCreatureAttribute.UNDEAD)
-							{
-								particle = EnumParticleTypes.END_ROD;
-							}
-							if(type == EnchantmentType.ARTHROPODS && mob.getCreatureAttribute() == EnumCreatureAttribute.ARTHROPOD)
-							{
-								particle = EnumParticleTypes.REDSTONE;
-							}
-							if(type == EnchantmentType.SWEEPING)
-							{
-								particle = EnumParticleTypes.SPELL_INSTANT;
-							}
-							if(type == EnchantmentType.EXPERIENCE)
-							{
-								particle = EnumParticleTypes.VILLAGER_HAPPY;
-							}
-							if(type == EnchantmentType.CURSE)
-							{
-								particle = EnumParticleTypes.SUSPENDED_DEPTH;
-							}
-							if(type == EnchantmentType.LUCK)
-							{
-								particle = EnumParticleTypes.TOTEM;
-							}
-							
-							this.getWorld().spawnParticle(particle, xCoord, yCoord, zCoord, 0, 0, 0);
-						}
+						this.getWorld().spawnParticle(particles[0], xCoord, yCoord, zCoord, 0, 0, 0);
+						this.getWorld().spawnParticle(particles[1], xCoord, yCoord, zCoord, 0, 0, 0);
 					}
 				}
 			}
@@ -466,7 +406,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		}
 		if(type == EnchantmentType.EXPERIENCE)
 		{
-			if(!world.isRemote && world.rand.nextInt(7) == 0)
+			if(!this.getWorld().isRemote && this.getWorld().rand.nextInt(7) == 0)
 			{
 				EntityXPOrb orb = new EntityXPOrb(this.getWorld());
 				orb.xpValue = 1;
@@ -514,13 +454,13 @@ public class TileEntityWard extends TileEntity implements ITickable
 						{
 							this.getWorld().setBlockState(blockpos, ((BlockCrops)block).withAge(((BlockCrops)block).getMetaFromState(state) + 1));
 							
-							if(world.isRemote)
+							if(this.getWorld().isRemote)
 							{
 								for(int i = 0; i < 5; i++)
 								{
-			        	        	double xPos = x + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-			        	        	double zPos = z + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-			    	        		world.spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
+			        	        	double xPos = x + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
+			        	        	double zPos = z + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
+			        	        	this.getWorld().spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
 								}
 							}
 						}
@@ -531,13 +471,13 @@ public class TileEntityWard extends TileEntity implements ITickable
 						{
 							this.getWorld().setBlockState(blockpos, state.withProperty(BlockStem.AGE, state.getValue(BlockStem.AGE) + 1));
 							
-							if(world.isRemote)
+							if(this.getWorld().isRemote)
 							{
 								for(int i = 0; i < 5; i++)
 								{
-			        	        	double xPos = x + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-			        	        	double zPos = z + (0.5 * this.world.rand.nextDouble()) - (0.5 * this.world.rand.nextDouble());
-			    	        		world.spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
+			        	        	double xPos = x + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
+			        	        	double zPos = z + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
+			        	        	this.getWorld().spawnParticle(EnumParticleTypes.WATER_SPLASH, xPos, y, zPos, 0, 0, 0);
 								}
 							}
 						}
@@ -715,7 +655,7 @@ public class TileEntityWard extends TileEntity implements ITickable
     @Nullable
     public SPacketUpdateTileEntity getUpdatePacket()
     {
-        return new SPacketUpdateTileEntity(this.pos, 7, this.writeToNBT(new NBTTagCompound()));
+        return new SPacketUpdateTileEntity(this.getPos(), 7, this.writeToNBT(new NBTTagCompound()));
     }
 	
 	@Override
@@ -732,10 +672,10 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public void updateTE()
 	{
-		IBlockState state = world.getBlockState(this.getPos());
-		this.world.notifyBlockUpdate(this.getPos(), state, state, 3);
-		this.world.markBlockRangeForRenderUpdate(pos, pos);
-		this.world.scheduleBlockUpdate(pos, this.getBlockType(), 0, 0);
+		IBlockState state = this.getWorld().getBlockState(this.getPos());
+		this.getWorld().notifyBlockUpdate(this.getPos(), state, state, 3);
+		this.getWorld().markBlockRangeForRenderUpdate(this.getPos(), this.getPos());
+		this.getWorld().scheduleBlockUpdate(this.getPos(), this.getBlockType(), 0, 0);
 		this.markDirty();
 	}
 }

@@ -1,4 +1,4 @@
-package wards.ward;
+package wards.function;
 
 import java.util.Random;
 
@@ -39,6 +39,7 @@ import net.minecraftforge.event.entity.living.LootingLevelEvent;
 import net.minecraftforge.event.entity.player.ArrowLooseEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.ItemFishedEvent;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerPickupXpEvent;
 import net.minecraftforge.event.world.BlockEvent;
@@ -48,6 +49,16 @@ import wards.effect.WardEffect;
 
 public class WardFunctionEvent
 {
+	@SubscribeEvent
+	public void loadTooltip(ItemTooltipEvent event)
+	{
+		if(event.getItemStack().getItem() == Item.getItemFromBlock(Wards.ward))
+		{
+			event.getToolTip().add("Place an enchanted book on it!");
+			event.getToolTip().add("Powered by lapis.");
+		}
+	}
+	
 	@SubscribeEvent
 	public void onPlayerHurt(LivingHurtEvent event)
 	{

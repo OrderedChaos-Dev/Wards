@@ -1,4 +1,4 @@
-package wards.ward;
+package wards.block;
 
 import java.util.List;
 
