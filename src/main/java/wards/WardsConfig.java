@@ -15,7 +15,8 @@ public class WardsConfig
 	@Name("Ward Damage Multiplier")
 	@Comment({
 		"All damage by a ward is multiplied by this value",
-		"e.g. a multiplier of 1.5 is 150% damage"
+		"e.g. a multiplier of 1.5 is 150% damage",
+		"Note: this value can be changed at any time, even while playing"
 	})
 	public static float damageMultiplier = 1.0F;
 	

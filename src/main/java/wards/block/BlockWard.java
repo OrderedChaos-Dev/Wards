@@ -10,9 +10,11 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemEnchantedBook;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
@@ -42,6 +44,14 @@ public class BlockWard extends Block
     {
 		TileEntityWard ward = (TileEntityWard)world.getTileEntity(pos);
 		ItemStack stack = player.getHeldItem(hand);
+		
+		if(ward.isAdminMode())
+		{
+			if(!player.canUseCommand(2, ""))
+			{
+				return false;
+			}
+		}
 		
 		if(stack.getItem() instanceof ItemEnchantedBook)
 		{
@@ -76,6 +86,10 @@ public class BlockWard extends Block
 		{
 			ward.setDisplayMode(!ward.isDisplayMode());
 			return true;
+		}
+		else if(stack.getItem() == Item.getItemFromBlock(Blocks.COMMAND_BLOCK) && player.canUseCommand(2, ""))
+		{
+			ward.setAdminMode(!ward.isAdminMode());
 		}
 		else if(ward.getBook() != ItemStack.EMPTY)
 		{

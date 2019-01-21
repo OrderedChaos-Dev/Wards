@@ -66,6 +66,7 @@ public class TileEntityWard extends TileEntity implements ITickable
     private boolean disableWard;
     
     private boolean isDisplayMode;
+    private boolean adminMode;
     
     private NBTTagList list;
 	
@@ -79,6 +80,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 	    disableAttacks = false;
 	    disableWard = false;
 	    isDisplayMode = false;
+	    adminMode = false;
 	}
 	
 	public void setBook(ItemStack stack)
@@ -152,8 +154,8 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public void disableAttacks(boolean bool)
 	{
-		this.disableAttacks = bool;
 		updateTE();
+		this.disableAttacks = bool;
 		if(bool)
 		{
 			this.spawnParticles(EnumParticleTypes.VILLAGER_HAPPY, 15);
@@ -175,8 +177,8 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public void setDisplayMode(boolean bool)
 	{
-		this.isDisplayMode = bool;
 		updateTE();
+		this.isDisplayMode = bool;
 		if(bool)
 		{
 			this.spawnParticles(EnumParticleTypes.ENCHANTMENT_TABLE, 15);
@@ -186,6 +188,21 @@ public class TileEntityWard extends TileEntity implements ITickable
 	public boolean isDisplayMode()
 	{
 		return this.isDisplayMode;
+	}
+	
+	public void setAdminMode(boolean bool)
+	{
+		updateTE();
+		this.adminMode = bool;
+		if(bool)
+		{
+			this.spawnParticles(EnumParticleTypes.CLOUD, 15);
+		}
+	}
+	
+	public boolean isAdminMode()
+	{
+		return this.adminMode;
 	}
 	
 	public EnchantmentData[] getEnchantments()
@@ -278,7 +295,8 @@ public class TileEntityWard extends TileEntity implements ITickable
 				}
 			}
 		}
-		consumePower();
+		if(!this.isAdminMode())
+			consumePower();
 	}
 	
 	public void wardArea(EnchantmentData ed1, EnchantmentData ed2)
@@ -336,7 +354,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 			
 			if(nearbyMobs.size() > 0)
 			{
-				power -= 10;
+				power -= !this.isAdminMode() ? 10 : 0;
 				float damage = 0.5F * lvl;
 				
 				if(ed2 != null)
@@ -706,6 +724,10 @@ public class TileEntityWard extends TileEntity implements ITickable
         {
         	this.isDisplayMode = compound.getBoolean("Display");
         }
+        if(compound.hasKey("Admin"))
+        {
+        	this.adminMode = compound.getBoolean("Admin");
+        }
 	}
 	
 	@Override
@@ -723,7 +745,8 @@ public class TileEntityWard extends TileEntity implements ITickable
         compound.setBoolean("DisableAttacks", this.disableAttacks);
         compound.setBoolean("DisableWard", this.disableWard);
         compound.setBoolean("Display", this.isDisplayMode);
-		
+        compound.setBoolean("Admin", this.adminMode);
+        
 		return compound;
 	}
 	
