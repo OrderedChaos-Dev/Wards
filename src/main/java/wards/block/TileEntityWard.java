@@ -466,7 +466,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		}
 		if(type == EnchantmentType.LUCK)
 		{
-			if(this.getWorld().rand.nextInt(100) == 0)
+			if(this.getWorld().rand.nextInt(200) == 0)
 			{
 				mob.attackEntityFrom(DamageSource.MAGIC, 50.0F);
 			}
