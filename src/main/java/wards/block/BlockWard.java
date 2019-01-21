@@ -18,7 +18,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
@@ -44,65 +43,47 @@ public class BlockWard extends Block
 		TileEntityWard ward = (TileEntityWard)world.getTileEntity(pos);
 		ItemStack stack = player.getHeldItem(hand);
 		
-		if(world.isRemote)
+		if(stack.getItem() instanceof ItemEnchantedBook)
 		{
-			if(stack.getItem() == Items.DYE)
+			if(ward.getBook() != ItemStack.EMPTY)
 			{
-				if(EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE)
+				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
+			}
+			ward.setBook(stack.copy());
+			
+			if(!player.isCreative())
+			{
+				stack.shrink(1);
+			}
+			
+			return true;
+		}
+		else if(stack.getItem() == Items.DYE)
+		{
+			if(EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE)
+			{
+				if(ward.fuelWard())
 				{
-					if(ward.getPower() + 24000 <= ward.getMaxPower())
+					if(!player.isCreative())
 					{
-						for(int i = 0; i < 16; i++)
-						{
-							double x = pos.getX() + 0.5 + (0.5 * world.rand.nextDouble()) - (0.5 * world.rand.nextDouble());
-							double y = pos.getY() + 0.5 + (0.5 * world.rand.nextDouble()) - (0.5 * world.rand.nextDouble());
-							double z = pos.getZ() + 0.5 + (0.5 * world.rand.nextDouble()) - (0.5 * world.rand.nextDouble());
-							
-							world.spawnParticle(EnumParticleTypes.ENCHANTMENT_TABLE, x, y, z, 0, 0, 0);
-						}
+						stack.shrink(1);
 					}
 				}
 			}
 			return true;
 		}
-		else
+		else if(stack.getItem() == Items.STICK)
 		{
-			if(stack.getItem() instanceof ItemEnchantedBook)
-			{
-				if(ward.getBook() != ItemStack.EMPTY)
-				{
-					InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
-				}
-				ward.setBook(stack.copy());
-				
-				if(!player.isCreative())
-				{
-					stack.shrink(1);
-				}
-				
-				return true;
-			}
-			else if(stack.getItem() == Items.DYE)
-			{
-				if(EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE)
-				{
-					if(ward.fuelWard())
-					{
-						if(!player.isCreative())
-						{
-							stack.shrink(1);
-						}
-					}
-				}
-			}
-			else
-			{
-				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
-				ward.setBook(ItemStack.EMPTY);
-				
-				return true; 
-			}
+			ward.setDisplayMode(!ward.isDisplayMode());
+			return true;
 		}
+		else if(ward.getBook() != ItemStack.EMPTY)
+		{
+			InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
+			ward.setBook(ItemStack.EMPTY);
+			return true;
+		}
+		
         return false;
     }
 	

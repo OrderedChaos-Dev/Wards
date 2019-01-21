@@ -64,6 +64,8 @@ public class TileEntityWard extends TileEntity implements ITickable
     private boolean disableAttacks;
     private boolean disableWard;
     
+    private boolean isDisplayMode;
+    
     private NBTTagList list;
 	
 	public TileEntityWard()
@@ -75,6 +77,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		
 	    disableAttacks = false;
 	    disableWard = false;
+	    isDisplayMode = false;
 	}
 	
 	public void setBook(ItemStack stack)
@@ -102,6 +105,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public boolean fuelWard()
 	{
+		updateTE();
 		if(power + 24000 > maxPower)
 		{
 			return false;
@@ -109,7 +113,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		else
 		{
 			power += 24000;
-			updateTE();
+			this.spawnParticles(EnumParticleTypes.ENCHANTMENT_TABLE, 16);
 			return true;
 		}
 	}
@@ -142,18 +146,45 @@ public class TileEntityWard extends TileEntity implements ITickable
 				}
 			}
 		}
+		updateTE();
 	}
 	
 	public void disableAttacks(boolean bool)
 	{
 		this.disableAttacks = bool;
 		updateTE();
+		if(bool)
+		{
+			this.spawnParticles(EnumParticleTypes.VILLAGER_HAPPY, 15);
+		}
 	}
 	
 	public void disableWard(boolean bool)
 	{
 		this.disableWard = bool;
 		updateTE();
+		if(bool)
+		{
+			if(bool)
+			{
+				this.spawnParticles(EnumParticleTypes.CRIT, 15);
+			}
+		}
+	}
+	
+	public void setDisplayMode(boolean bool)
+	{
+		this.isDisplayMode = bool;
+		updateTE();
+		if(bool)
+		{
+			this.spawnParticles(EnumParticleTypes.ENCHANTMENT_TABLE, 15);
+		}
+	}
+	
+	public boolean isDisplayMode()
+	{
+		return this.isDisplayMode;
 	}
 	
 	public EnchantmentData[] getEnchantments()
@@ -237,17 +268,11 @@ public class TileEntityWard extends TileEntity implements ITickable
 			}
 			else
 			{
-				if(this.getWorld().isRemote)
+				if(this.getWorld().isRemote && !this.isDisplayMode)
 				{
     	        	if(this.getWorld().rand.nextBoolean())
     	        	{
-    					double x = this.getPos().getX() + 0.5;
-    					double y = this.getPos().getY() + 0.8;
-    					double z = this.getPos().getZ() + 0.5;
-    					
-        	        	double xPos = x + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
-        	        	double zPos = z + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
-        	        	this.getWorld().spawnParticle(EnumParticleTypes.REDSTONE, xPos, y, zPos, 0, 0, 0);
+    	        		this.spawnParticles(EnumParticleTypes.REDSTONE, 1);
     	        	}
 				}
 			}
@@ -321,20 +346,20 @@ public class TileEntityWard extends TileEntity implements ITickable
 				for(EntityMob mob : nearbyMobs)
 				{
 					mob.attackEntityFrom(DamageSource.MAGIC, damage);
-					this.handleEnchantAttack(mob, enchant1);
+					this.handleEnchantAttack(mob, enchant1, lvl);
 					
 					if(this.getWorld().isRemote)
 					{
-						double xDiff = (mob.posX - this.getPos().getX()) / 14.0;
-						double yDiff = (mob.posY + 0.5 - this.getPos().getY()) / 14.0;
-						double zDiff = (mob.posZ - this.getPos().getZ()) / 14.0;
+						double xDiff = (mob.posX - (this.getPos().getX() + 0.5)) / 14.0;
+						double yDiff = (mob.posY + 0.5 - (this.getPos().getY() + 0.8)) / 14.0;
+						double zDiff = (mob.posZ - (this.getPos().getZ() + 0.5)) / 14.0;
 						EnumParticleTypes[] particles = EnchantmentTypeHelper.getParticles(enchant1);
 						
 						for(double zapCount = 1.0; zapCount <= 14.0; zapCount++) //zap!
 						{
-							double xCoord = this.getPos().getX() + (xDiff * zapCount) + 0.5;
-							double yCoord = this.getPos().getY() + (yDiff * zapCount) + 0.5;
-							double zCoord = this.getPos().getZ() + (zDiff * zapCount) + 0.5;
+							double xCoord = this.getPos().getX() + (xDiff * zapCount);
+							double yCoord = this.getPos().getY() + (yDiff * zapCount);
+							double zCoord = this.getPos().getZ() + (zDiff * zapCount);
 							
 							this.getWorld().spawnParticle(particles[0], xCoord, yCoord, zCoord, 0, 0, 0);
 							this.getWorld().spawnParticle(particles[1], xCoord, yCoord, zCoord, 0, 0, 0);
@@ -345,7 +370,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		}
 	}
 	
-	public void handleEnchantAttack(EntityMob mob, Enchantment enchant)
+	public void handleEnchantAttack(EntityMob mob, Enchantment enchant, int level)
 	{
 		EnchantmentType type = EnchantmentTypeHelper.getEnchantmentType(enchant);
 		double x = mob.posX;
@@ -354,26 +379,26 @@ public class TileEntityWard extends TileEntity implements ITickable
 		
 		if(type == EnchantmentType.GENERIC)
 		{
-			mob.attackEntityFrom(DamageSource.MAGIC, 1.0F);
+			mob.attackEntityFrom(DamageSource.MAGIC, Math.min(0.5F * level, 2.0F));
 		}
 		if(type == EnchantmentType.FIRE)
 		{
-			mob.setFire(5);
+			mob.setFire(3 * level);
 		}
 		if(type == EnchantmentType.WATER)
 		{
 			if(mob.isInWater() || this.getWorld().getBlockState(mob.getPosition()).getMaterial() == Material.WATER)
-				mob.attackEntityFrom(DamageSource.MAGIC, 2.0F);
+				mob.attackEntityFrom(DamageSource.MAGIC, Math.min(1.0F * level, 3.0F));
 		}
 		if(type == EnchantmentType.FROST)
 		{
-			mob.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation("slowness"), 100, 0));
+			mob.addPotionEffect(new PotionEffect(Potion.getPotionFromResourceLocation("slowness"), 100, Math.min(level - 1, 2)));
 		}
 		if(type == EnchantmentType.EXPLOSION)
 		{
 			if(this.getWorld().rand.nextInt(15) == 0)
 			{
-				this.getWorld().createExplosion(mob, x, y + 0.3, z, 1.0F, false);
+				this.getWorld().createExplosion(mob, x, y + 0.3, z, Math.min(1.0F * level, 3.0F), false);
 			}
 		}
 		if(type == EnchantmentType.KNOCKUP)
@@ -403,7 +428,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 				}
 				else
 				{
-					mob.attackEntityFrom(DamageSource.MAGIC, 2.0F);
+					mob.attackEntityFrom(DamageSource.MAGIC, Math.min(1.0F * level, 3.0F));
 				}
 			}
 		}
@@ -411,7 +436,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		{
 			if(mob.getCreatureAttribute() == EnumCreatureAttribute.ARTHROPOD)
 			{
-				mob.attackEntityFrom(DamageSource.MAGIC, 2.0F);
+				mob.attackEntityFrom(DamageSource.MAGIC, Math.min(1.0F * level, 3.0F));
 			}
 		}
 		if(type == EnchantmentType.SWEEPING)
@@ -421,7 +446,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 			{
 				if(entity instanceof EntityMob)
 				{
-					((EntityMob)entity).attackEntityFrom(DamageSource.MAGIC, 1.0F);
+					((EntityMob)entity).attackEntityFrom(DamageSource.MAGIC, Math.min(0.5F * level, 2.0F));
 				}
 			}
 		}
@@ -510,7 +535,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public boolean canWard()
 	{
-		if(this.disableWard || this.power <= 0)
+		if(this.disableWard || this.power <= 0 || this.isDisplayMode)
 		{
 			return false;
 		}
@@ -553,6 +578,20 @@ public class TileEntityWard extends TileEntity implements ITickable
 		return flag;
 	}
 	
+	public void spawnParticles(EnumParticleTypes particle, int amount)
+	{
+		double x = this.getPos().getX() + 0.5;
+		double y = this.getPos().getY() + 0.8;
+		double z = this.getPos().getZ() + 0.5;
+		
+		for(int i = 0; i < amount; i++)
+		{
+        	double xPos = x + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
+        	double zPos = z + (0.5 * this.getWorld().rand.nextDouble()) - (0.5 * this.getWorld().rand.nextDouble());
+        	this.getWorld().spawnParticle(particle, xPos, y, zPos, 0, 0, 0);
+		}
+	}
+	
 	//taken from TileEntityEnchantmentTable (and modified)
 	public void rotateBook()
 	{
@@ -562,7 +601,7 @@ public class TileEntityWard extends TileEntity implements ITickable
         this.bookRotationPrev = this.bookRotation;
         this.tRot += 0.02F;
         
-        if(canWard())
+        if(canWard() || this.isDisplayMode)
         	this.bookSpread += 0.1F;
         else
         	this.bookSpread -= 0.1F;
@@ -662,6 +701,10 @@ public class TileEntityWard extends TileEntity implements ITickable
         {
         	this.disableWard = compound.getBoolean("DisableWard");
         }
+        if(compound.hasKey("Display"))
+        {
+        	this.isDisplayMode = compound.getBoolean("Display");
+        }
 	}
 	
 	@Override
@@ -678,6 +721,7 @@ public class TileEntityWard extends TileEntity implements ITickable
         compound.setInteger("Power", power);
         compound.setBoolean("DisableAttacks", this.disableAttacks);
         compound.setBoolean("DisableWard", this.disableWard);
+        compound.setBoolean("Display", this.isDisplayMode);
 		
 		return compound;
 	}
