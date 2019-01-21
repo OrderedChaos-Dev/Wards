@@ -54,6 +54,7 @@ public class Wards
         
     	MinecraftForge.EVENT_BUS.register(this);
     	MinecraftForge.EVENT_BUS.register(new WardFunctionEvent());
+    	MinecraftForge.EVENT_BUS.register(new WardsConfig.ConfigEventHandler());
     }
     
     @EventHandler

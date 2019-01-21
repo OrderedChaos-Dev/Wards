@@ -40,6 +40,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import wards.WardsConfig;
 import wards.effect.WardEffect;
 import wards.function.EnchantmentTypeHelper;
 import wards.function.EnchantmentTypeHelper.EnchantmentType;
@@ -336,7 +337,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 			if(nearbyMobs.size() > 0)
 			{
 				power -= 10;
-				float damage = lvl;
+				float damage = 0.5F * lvl;
 				
 				if(ed2 != null)
 				{
@@ -345,7 +346,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 				
 				for(EntityMob mob : nearbyMobs)
 				{
-					mob.attackEntityFrom(DamageSource.MAGIC, damage);
+					mob.attackEntityFrom(DamageSource.MAGIC, damage * WardsConfig.damageMultiplier);
 					this.handleEnchantAttack(mob, enchant1, lvl);
 					
 					if(this.getWorld().isRemote)
@@ -379,7 +380,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		
 		if(type == EnchantmentType.GENERIC)
 		{
-			mob.attackEntityFrom(DamageSource.MAGIC, Math.min(0.5F * level, 2.0F));
+			mob.attackEntityFrom(DamageSource.MAGIC, Math.min(0.5F * level, 2.0F) * WardsConfig.damageMultiplier);
 		}
 		if(type == EnchantmentType.FIRE)
 		{
@@ -388,7 +389,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		if(type == EnchantmentType.WATER)
 		{
 			if(mob.isInWater() || this.getWorld().getBlockState(mob.getPosition()).getMaterial() == Material.WATER)
-				mob.attackEntityFrom(DamageSource.MAGIC, Math.min(1.0F * level, 3.0F));
+				mob.attackEntityFrom(DamageSource.MAGIC, Math.min(1.0F * level, 3.0F) * WardsConfig.damageMultiplier);
 		}
 		if(type == EnchantmentType.FROST)
 		{
@@ -398,7 +399,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		{
 			if(this.getWorld().rand.nextInt(15) == 0)
 			{
-				this.getWorld().createExplosion(mob, x, y + 0.3, z, Math.min(1.0F * level, 3.0F), false);
+				this.getWorld().createExplosion(mob, x, y + 0.3, z, Math.min(1.0F * level, 3.0F) * WardsConfig.damageMultiplier, false);
 			}
 		}
 		if(type == EnchantmentType.KNOCKUP)
@@ -428,7 +429,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 				}
 				else
 				{
-					mob.attackEntityFrom(DamageSource.MAGIC, Math.min(1.0F * level, 3.0F));
+					mob.attackEntityFrom(DamageSource.MAGIC, Math.min(1.0F * level, 3.0F) * WardsConfig.damageMultiplier);
 				}
 			}
 		}
@@ -446,7 +447,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 			{
 				if(entity instanceof EntityMob)
 				{
-					((EntityMob)entity).attackEntityFrom(DamageSource.MAGIC, Math.min(0.5F * level, 2.0F));
+					((EntityMob)entity).attackEntityFrom(DamageSource.MAGIC, Math.min(0.5F * level, 2.0F) * WardsConfig.damageMultiplier);
 				}
 			}
 		}
@@ -468,7 +469,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		{
 			if(this.getWorld().rand.nextInt(200) == 0)
 			{
-				mob.attackEntityFrom(DamageSource.MAGIC, 50.0F);
+				mob.attackEntityFrom(DamageSource.MAGIC, 50.0F * WardsConfig.damageMultiplier);
 			}
 		}
 	}
