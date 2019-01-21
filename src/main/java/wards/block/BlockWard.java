@@ -107,6 +107,15 @@ public class BlockWard extends Block
     }
 	
 	@Override
+    public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos)
+    {
+		TileEntityWard ward = (TileEntityWard)world.getTileEntity(pos);
+		int power = world.getStrongPower(fromPos);
+		ward.disableAttacks(power > 1);
+		ward.disableWard(power > 12);
+    }
+	
+	@Override
     public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entityIn, boolean isActualState)
     {
 		addCollisionBoxToList(pos, entityBox, collidingBoxes, BASE_BOX);

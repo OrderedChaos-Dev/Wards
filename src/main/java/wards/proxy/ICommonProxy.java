@@ -1,4 +1,4 @@
-package wards;
+package wards.proxy;
 
 import net.minecraft.tileentity.TileEntity;
 

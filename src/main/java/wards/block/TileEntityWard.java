@@ -61,6 +61,9 @@ public class TileEntityWard extends TileEntity implements ITickable
     private int power;
     private int maxPower;
     
+    private boolean disableAttacks;
+    private boolean disableWard;
+    
     private NBTTagList list;
 	
 	public TileEntityWard()
@@ -69,6 +72,9 @@ public class TileEntityWard extends TileEntity implements ITickable
 		list = new NBTTagList();
 		power = 0;
 		maxPower = 120000;
+		
+	    disableAttacks = false;
+	    disableWard = false;
 	}
 	
 	public void setBook(ItemStack stack)
@@ -136,6 +142,18 @@ public class TileEntityWard extends TileEntity implements ITickable
 				}
 			}
 		}
+	}
+	
+	public void disableAttacks(boolean bool)
+	{
+		this.disableAttacks = bool;
+		updateTE();
+	}
+	
+	public void disableWard(boolean bool)
+	{
+		this.disableWard = bool;
+		updateTE();
 	}
 	
 	public EnchantmentData[] getEnchantments()
@@ -286,38 +304,41 @@ public class TileEntityWard extends TileEntity implements ITickable
 		
 		this.handleSpecial(enchant1, range);
 		
-		List<EntityMob> nearbyMobs = this.getWorld().getEntitiesWithinAABB(EntityMob.class, wardArea);
-		
-		if(nearbyMobs.size() > 0)
+		if(!this.disableAttacks)
 		{
-			power -= 10;
-			float damage = lvl;
+			List<EntityMob> nearbyMobs = this.getWorld().getEntitiesWithinAABB(EntityMob.class, wardArea);
 			
-			if(ed2 != null)
+			if(nearbyMobs.size() > 0)
 			{
-				damage += 0.5F;
-			}
-			
-			for(EntityMob mob : nearbyMobs)
-			{
-				mob.attackEntityFrom(DamageSource.MAGIC, damage);
-				this.handleEnchantAttack(mob, enchant1);
+				power -= 10;
+				float damage = lvl;
 				
-				if(this.getWorld().isRemote)
+				if(ed2 != null)
 				{
-					double xDiff = (mob.posX - this.getPos().getX()) / 14.0;
-					double yDiff = (mob.posY + 0.5 - this.getPos().getY()) / 14.0;
-					double zDiff = (mob.posZ - this.getPos().getZ()) / 14.0;
-					EnumParticleTypes[] particles = EnchantmentTypeHelper.getParticles(enchant1);
+					damage += 0.5F;
+				}
+				
+				for(EntityMob mob : nearbyMobs)
+				{
+					mob.attackEntityFrom(DamageSource.MAGIC, damage);
+					this.handleEnchantAttack(mob, enchant1);
 					
-					for(double zapCount = 1.0; zapCount <= 14.0; zapCount++) //zap!
+					if(this.getWorld().isRemote)
 					{
-						double xCoord = this.getPos().getX() + (xDiff * zapCount) + 0.5;
-						double yCoord = this.getPos().getY() + (yDiff * zapCount) + 0.5;
-						double zCoord = this.getPos().getZ() + (zDiff * zapCount) + 0.5;
+						double xDiff = (mob.posX - this.getPos().getX()) / 14.0;
+						double yDiff = (mob.posY + 0.5 - this.getPos().getY()) / 14.0;
+						double zDiff = (mob.posZ - this.getPos().getZ()) / 14.0;
+						EnumParticleTypes[] particles = EnchantmentTypeHelper.getParticles(enchant1);
 						
-						this.getWorld().spawnParticle(particles[0], xCoord, yCoord, zCoord, 0, 0, 0);
-						this.getWorld().spawnParticle(particles[1], xCoord, yCoord, zCoord, 0, 0, 0);
+						for(double zapCount = 1.0; zapCount <= 14.0; zapCount++) //zap!
+						{
+							double xCoord = this.getPos().getX() + (xDiff * zapCount) + 0.5;
+							double yCoord = this.getPos().getY() + (yDiff * zapCount) + 0.5;
+							double zCoord = this.getPos().getZ() + (zDiff * zapCount) + 0.5;
+							
+							this.getWorld().spawnParticle(particles[0], xCoord, yCoord, zCoord, 0, 0, 0);
+							this.getWorld().spawnParticle(particles[1], xCoord, yCoord, zCoord, 0, 0, 0);
+						}
 					}
 				}
 			}
@@ -489,16 +510,16 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public boolean canWard()
 	{
+		if(this.disableWard || this.power <= 0)
+		{
+			return false;
+		}
+		
 		boolean flag = true;
 		int range = 15;
 		BlockPos pos1 = this.getPos().add(-range, -range, -range);
 		BlockPos pos2 = this.getPos().add(range, range, range);
-		
-		if(this.power <= 0)
-		{
-			flag = false;
-		}
-		
+
 		for(BlockPos blockpos : BlockPos.getAllInBoxMutable(pos1, pos2))
 		{
 			if(!Objects.equal(blockpos, this.getPos()))
@@ -633,6 +654,14 @@ public class TileEntityWard extends TileEntity implements ITickable
         {
         	this.power = compound.getInteger("Power");
         }
+        if(compound.hasKey("DisableAttacks"))
+        {
+        	this.disableAttacks = compound.getBoolean("DisableAttacks");
+        }
+        if(compound.hasKey("DisableWard"))
+        {
+        	this.disableWard = compound.getBoolean("DisableWard");
+        }
 	}
 	
 	@Override
@@ -647,6 +676,8 @@ public class TileEntityWard extends TileEntity implements ITickable
             compound.setTag("Enchantments", list);
         }
         compound.setInteger("Power", power);
+        compound.setBoolean("DisableAttacks", this.disableAttacks);
+        compound.setBoolean("DisableWard", this.disableWard);
 		
 		return compound;
 	}
