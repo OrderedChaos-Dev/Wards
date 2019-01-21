@@ -44,12 +44,15 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerPickupXpEvent;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import wards.Wards;
 import wards.effect.WardEffect;
 
 public class WardFunctionEvent
 {
 	@SubscribeEvent
+	@SideOnly(Side.CLIENT)
 	public void loadTooltip(ItemTooltipEvent event)
 	{
 		if(event.getItemStack().getItem() == Item.getItemFromBlock(Wards.ward))
