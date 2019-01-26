@@ -554,6 +554,9 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public boolean canWard()
 	{
+		if(this.isAdminMode())
+			return true;
+		
 		if(this.disableWard || this.power <= 0 || this.isDisplayMode)
 		{
 			return false;
