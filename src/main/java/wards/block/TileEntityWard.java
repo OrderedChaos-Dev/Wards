@@ -108,7 +108,6 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public boolean fuelWard()
 	{
-		updateTE();
 		if(power + 24000 > maxPower)
 		{
 			return false;
@@ -116,7 +115,8 @@ public class TileEntityWard extends TileEntity implements ITickable
 		else
 		{
 			power += 24000;
-			this.spawnParticles(EnumParticleTypes.ENCHANTMENT_TABLE, 16);
+			updateTE();
+			this.spawnParticles(EnumParticleTypes.ENCHANTMENT_TABLE, 15);
 			return true;
 		}
 	}
@@ -177,12 +177,12 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public void setDisplayMode(boolean bool)
 	{
-		updateTE();
 		this.isDisplayMode = bool;
 		if(bool)
 		{
 			this.spawnParticles(EnumParticleTypes.ENCHANTMENT_TABLE, 15);
 		}
+		updateTE();
 	}
 	
 	public boolean isDisplayMode()
@@ -192,12 +192,12 @@ public class TileEntityWard extends TileEntity implements ITickable
 	
 	public void setAdminMode(boolean bool)
 	{
-		updateTE();
 		this.adminMode = bool;
 		if(bool)
 		{
 			this.spawnParticles(EnumParticleTypes.CLOUD, 15);
 		}
+		updateTE();
 	}
 	
 	public boolean isAdminMode()
@@ -288,7 +288,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 			{
 				if(this.getWorld().isRemote && !this.isDisplayMode)
 				{
-    	        	if(this.getWorld().rand.nextBoolean())
+    	        	if(this.getWorld().rand.nextBoolean() && this.getWorld().getTotalWorldTime() % 50 == 0)
     	        	{
     	        		this.spawnParticles(EnumParticleTypes.REDSTONE, 1);
     	        	}
@@ -330,13 +330,13 @@ public class TileEntityWard extends TileEntity implements ITickable
 			
 			if(this.getWorld().isRemote)
 			{
-				double xDiff = (player.posX - this.getPos().getX()) / 16;
-				double yDiff = (player.posY + 0.5 - this.getPos().getY()) / 16;
-				double zDiff = (player.posZ - this.getPos().getZ()) / 16;
+				double xDiff = (player.posX - this.getPos().getX()) / 13.0;
+				double yDiff = (player.posY + 0.5 - this.getPos().getY()) / 13.0;
+				double zDiff = (player.posZ - this.getPos().getZ()) / 13.0;
 				
 				Random rand = this.getWorld().rand;
 				
-				for(double i = 1.0; i <= 16.0; i++)
+				for(double i = 1.0; i <= 13.0; i++)
 				{
 					double x = this.getPos().getX() + (xDiff * i) + 0.5 + (0.25 * rand.nextDouble() - 0.25 * rand.nextDouble());
 					double y = this.getPos().getY() + (yDiff * i) + 0.5;

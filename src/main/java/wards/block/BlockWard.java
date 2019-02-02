@@ -41,64 +41,68 @@ public class BlockWard extends Block
 	
 	@Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
-    {
-		TileEntityWard ward = (TileEntityWard)world.getTileEntity(pos);
-		ItemStack stack = player.getHeldItem(hand);
-		
-		if(ward.isAdminMode())
+    {	
+		if(!world.isRemote)
 		{
-			if(!player.canUseCommand(2, ""))
-			{
-				return false;
-			}
-		}
-		
-		if(stack.getItem() instanceof ItemEnchantedBook)
-		{
-			if(ward.getBook() != ItemStack.EMPTY)
-			{
-				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
-			}
-			ward.setBook(stack.copy());
+			TileEntityWard ward = (TileEntityWard)world.getTileEntity(pos);
+			ItemStack stack = player.getHeldItem(hand);
 			
-			if(!player.isCreative())
+			if(ward.isAdminMode())
 			{
-				stack.shrink(1);
-			}
-			
-			return true;
-		}
-		else if(stack.getItem() == Items.DYE)
-		{
-			if(EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE)
-			{
-				if(ward.fuelWard())
+				if(!player.canUseCommand(2, ""))
 				{
-					if(!player.isCreative())
-					{
-						stack.shrink(1);
-					}
+					return false;
 				}
 			}
-			return true;
-		}
-		else if(stack.getItem() == Items.STICK)
-		{
-			ward.setDisplayMode(!ward.isDisplayMode());
-			return true;
-		}
-		else if(stack.getItem() == Item.getItemFromBlock(Blocks.COMMAND_BLOCK) && player.canUseCommand(2, ""))
-		{
-			ward.setAdminMode(!ward.isAdminMode());
-		}
-		else if(ward.getBook() != ItemStack.EMPTY)
-		{
-			InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
-			ward.setBook(ItemStack.EMPTY);
-			return true;
+			
+			if(stack.getItem() instanceof ItemEnchantedBook)
+			{
+				if(ward.getBook().getItem() instanceof ItemEnchantedBook)
+				{
+					InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
+				}
+				ward.setBook(stack.copy());
+				
+				if(!player.isCreative())
+				{
+					stack.shrink(1);
+				}
+				
+				return true;
+			}
+			else if(stack.getItem() == Items.DYE)
+			{
+				if(EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE)
+				{
+					if(ward.fuelWard())
+					{
+						if(!player.isCreative())
+						{
+							stack.shrink(1);
+						}
+					}
+				}
+				return true;
+			}
+			else if(stack.getItem() == Items.STICK)
+			{
+				ward.setDisplayMode(!ward.isDisplayMode());
+				return true;
+			}
+			else if(stack.getItem() == Item.getItemFromBlock(Blocks.COMMAND_BLOCK) && player.canUseCommand(2, ""))
+			{
+				ward.setAdminMode(!ward.isAdminMode());
+				return true;
+			}
+			else if(ward.getBook() != ItemStack.EMPTY)
+			{
+				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ward.getBook());
+				ward.setBook(ItemStack.EMPTY);
+				return true;
+			}	
 		}
 		
-        return false;
+        return true;
     }
 	
 	@Override
