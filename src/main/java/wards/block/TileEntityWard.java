@@ -141,12 +141,10 @@ public class TileEntityWard extends TileEntity implements ITickable
 			{
 				hasBook = true;
 			}
-			else
+			
+			if(this.getWorld().getTotalWorldTime() % (hasBook ? 1 : 10) == 0)
 			{
-				if(this.getWorld().getTotalWorldTime() % (hasBook ? 1 : 10) == 0)
-				{
-					power--;
-				}
+				power--;
 			}
 		}
 		updateTE();
@@ -236,9 +234,9 @@ public class TileEntityWard extends TileEntity implements ITickable
         
 		if(this.book.getItem() instanceof ItemEnchantedBook)
 		{
-			if(this.canWard())
+			if(this.getWorld().getTotalWorldTime() % 100 == 0)
 			{
-				if(this.getWorld().getTotalWorldTime() % 100 == 0)
+				if(this.canWard())
 				{
 					EnchantmentData[] enchants = getEnchantments();
 					if(enchants.length > 0)
@@ -283,18 +281,19 @@ public class TileEntityWard extends TileEntity implements ITickable
 						this.wardArea(primaryEnchant, secondaryEnchant);
 					}
 				}
-			}
-			else
-			{
-				if(this.getWorld().isRemote && !this.isDisplayMode)
+				else
 				{
-    	        	if(this.getWorld().rand.nextBoolean() && this.getWorld().getTotalWorldTime() % 50 == 0)
-    	        	{
-    	        		this.spawnParticles(EnumParticleTypes.REDSTONE, 1);
-    	        	}
+					if(this.getWorld().isRemote && !this.isDisplayMode)
+					{
+	    	        	if(this.getWorld().getTotalWorldTime() % 20 == 0)
+	    	        	{
+	    	        		this.spawnParticles(EnumParticleTypes.REDSTONE, 1);
+	    	        	}
+					}
 				}
 			}
 		}
+		
 		if(!this.isAdminMode())
 			consumePower();
 	}
@@ -577,8 +576,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 					{
 						flag = false;
 						
-						//pulses every 2 seconds to show where the interfering ward is
-						if(!flag && this.getWorld().isRemote && this.getWorld().getTotalWorldTime() % 40 == 0)
+						if(!flag && this.getWorld().isRemote)
 						{
 							double xDiff = (blockpos.getX() - this.getPos().getX()) / 8.0;
 							double yDiff = (blockpos.getY() - this.getPos().getY()) / 8.0;
