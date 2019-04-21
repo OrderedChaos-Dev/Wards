@@ -24,6 +24,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import wards.Wards;
 
 public class BlockWard extends Block
 {
@@ -70,11 +71,11 @@ public class BlockWard extends Block
 				
 				return true;
 			}
-			else if(stack.getItem() == Items.DYE)
+			else if(stack.getItem() == Items.DYE || stack.getItem() == Wards.enchanted_paper)
 			{
 				if(EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE)
 				{
-					if(ward.fuelWard())
+					if(ward.fuelWard(stack.getItem()))
 					{
 						if(!player.isCreative())
 						{

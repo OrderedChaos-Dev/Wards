@@ -1,0 +1,14 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"ingredients": [
+		{
+			"item": "minecraft:enchanted_book",
+			"data": 32767
+		}
+	],
+	"result": {
+		"item": "wards:enchanted_paper",
+		"count": 3,
+		"data": 0
+	}
+}

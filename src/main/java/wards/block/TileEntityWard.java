@@ -21,6 +21,7 @@ import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Enchantments;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemEnchantedBook;
@@ -75,7 +76,7 @@ public class TileEntityWard extends TileEntity implements ITickable
 		book = ItemStack.EMPTY;
 		list = new NBTTagList();
 		power = 0;
-		maxPower = 120000;
+		maxPower = 240000;
 		
 	    disableAttacks = false;
 	    disableWard = false;
@@ -106,15 +107,15 @@ public class TileEntityWard extends TileEntity implements ITickable
 		return this.book;
 	}
 	
-	public boolean fuelWard()
+	public boolean fuelWard(Item item)
 	{
-		if(power + 24000 > maxPower)
+		if(power + (item == Items.DYE ? 24000 : 48000) > maxPower)
 		{
 			return false;
 		}
 		else
 		{
-			power += 24000;
+			power += item == Items.DYE ? 24000 : 48000; //lapis or enchanted paper
 			updateTE();
 			this.spawnParticles(EnumParticleTypes.ENCHANTMENT_TABLE, 15);
 			return true;

@@ -25,6 +25,7 @@ import wards.block.BlockWard;
 import wards.block.TileEntityWard;
 import wards.effect.WardEffectManager;
 import wards.function.WardFunctionEvent;
+import wards.item.ItemEnchantedPaper;
 import wards.proxy.ICommonProxy;
 
 @Mod(modid = Wards.MODID, name = Wards.NAME, version = Wards.VERSION)
@@ -32,7 +33,7 @@ public class Wards
 {
     public static final String MODID = "wards";
     public static final String NAME = "Wards";
-    public static final String VERSION = "1.1";
+    public static final String VERSION = "1.2";
     
     @SidedProxy(clientSide = "wards.proxy.ClientProxy", serverSide = "wards.proxy.ServerProxy")
     public static ICommonProxy proxy;
@@ -40,6 +41,7 @@ public class Wards
     public static Logger logger;
 
     public static Block ward;
+    public static Item enchanted_paper;
     
     @EventHandler
     public void preInit(FMLPreInitializationEvent event)
@@ -49,6 +51,10 @@ public class Wards
         logger.info("pre init!!!!!!!!!!!!!!!!!!!!!!");
         ward = new BlockWard().setUnlocalizedName("ward").setRegistryName(new ResourceLocation(MODID, "ward"));
         ward.setCreativeTab(CreativeTabs.MISC);
+        
+        enchanted_paper = new ItemEnchantedPaper().setUnlocalizedName("enchanted_paper").setRegistryName(new ResourceLocation(MODID, "enchanted_paper"));
+        enchanted_paper.setCreativeTab(CreativeTabs.MISC);
+        
         GameRegistry.registerTileEntity(TileEntityWard.class, new ResourceLocation(MODID, "ward"));
         WardEffectManager.initEffects();
         
@@ -72,9 +78,11 @@ public class Wards
 	@SubscribeEvent
 	public void registerItems(RegistryEvent.Register<Item> event)
 	{
-		ItemBlock item = new ItemBlock(ward);
-		item.setRegistryName(new ResourceLocation(Wards.MODID, "ward"));
-		event.getRegistry().register(item);
+		ItemBlock ward_itemblock = new ItemBlock(ward);
+		ward_itemblock.setRegistryName(new ResourceLocation(Wards.MODID, "ward"));
+		
+		event.getRegistry().register(enchanted_paper);
+		event.getRegistry().register(ward_itemblock);
 	}
 	
 	@SubscribeEvent
@@ -90,7 +98,9 @@ public class Wards
 	@SubscribeEvent
 	public void registerItemModels(ModelRegistryEvent event)
 	{
-		Item item = Item.getItemFromBlock(ward);
-		ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(item.getRegistryName(), "inventory"));
+		Item ward_item = Item.getItemFromBlock(ward);
+		ModelLoader.setCustomModelResourceLocation(ward_item, 0, new ModelResourceLocation(ward_item.getRegistryName(), "inventory"));
+		
+		ModelLoader.setCustomModelResourceLocation(enchanted_paper, 0, new ModelResourceLocation(enchanted_paper.getRegistryName(), "inventory"));
 	}
 }
