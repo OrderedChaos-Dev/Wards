@@ -71,16 +71,13 @@ public class BlockWard extends Block
 				
 				return true;
 			}
-			else if(stack.getItem() == Items.DYE || stack.getItem() == Wards.enchanted_paper)
+			else if((stack.getItem() == Items.DYE && EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE) || stack.getItem() == Wards.enchanted_paper)
 			{
-				if(EnumDyeColor.byDyeDamage(stack.getMetadata()) == EnumDyeColor.BLUE)
+				if(ward.fuelWard(stack.getItem()))
 				{
-					if(ward.fuelWard(stack.getItem()))
+					if(!player.isCreative())
 					{
-						if(!player.isCreative())
-						{
-							stack.shrink(1);
-						}
+						stack.shrink(1);
 					}
 				}
 				return true;

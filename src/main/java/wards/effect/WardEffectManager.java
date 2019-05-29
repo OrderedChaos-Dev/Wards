@@ -20,15 +20,26 @@ public class WardEffectManager
 	{
 		for(Enchantment enchant : ForgeRegistries.ENCHANTMENTS.getValuesCollection())
 		{
+			int count = 0;
 			String name = enchant.getRegistryName().getResourcePath();
-			Potion effect = new WardEffect(enchant).setPotionName("effect." + name);
+		
+			Potion effect = new WardEffect(enchant).setPotionName("effect.ward_" + name);
+			for(Potion potion : EFFECTS)
+			{
+				//in case of other mods adding enchantments that share names with existing potion effects
+				if(potion.getName().equals(effect.getName()))
+				{
+					count++;
+					effect.setPotionName("effect.ward_" + name + count);
+				}
+			}
 			
 			if(enchant == Enchantments.DEPTH_STRIDER)
 			{
 				effect.registerPotionAttributeModifier(EntityPlayer.SWIM_SPEED, depth_strider_UUID, 0.7, 2);
 			}
 			
-			effect.setRegistryName(new ResourceLocation(Wards.MODID, "effect_" + name));
+			effect.setRegistryName(new ResourceLocation(Wards.MODID, "effect_" + name + (count > 0 ? count : "")));
 			EFFECTS.add(effect);
 			Wards.logger.debug("loading " + effect.getRegistryName());
 		}

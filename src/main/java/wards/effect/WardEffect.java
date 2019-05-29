@@ -1,7 +1,6 @@
 package wards.effect;
 
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.init.Enchantments;
 import net.minecraft.potion.Potion;
 
 public class WardEffect extends Potion
@@ -24,7 +23,7 @@ public class WardEffect extends Potion
 				return (WardEffect)effect;
 		}
 		
-		return byEnchant(Enchantments.SHARPNESS); //fall back on sharpness so it doesn't crash modded enchants that aren't support yet
+		return (WardEffect) WardEffectManager.EFFECTS.get(0); //fall back on sharpness so it doesn't crash modded enchants that aren't support yet
 	}
 	
 	public Enchantment getEnchant()
