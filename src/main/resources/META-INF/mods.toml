@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[30,)"
+issueTrackerURL="https://github.com/OrderedChaos-Dev/Wards/issues"
+
+[[mods]]
+	modId="wards"
+	version="${version}"
+	displayName="Wards"
+	displayURL="https://www.orderedchaos.dev/"
+	logoFile="wards.png"
+	authors="ordered_chaos_dev"
+	description='''
+	wardssssssssssssssss
+	'''
+[[dependencies.wards]]
+    modId="forge"
+    mandatory=true
+    versionRange="[30,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.wards]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.15.2]"
+    ordering="NONE"
+    side="BOTH"

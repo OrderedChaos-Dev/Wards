@@ -1,10 +1,10 @@
 {
     "parent": "block/cube_all",
     "textures": {
-    	"particle": "blocks/obsidian",
-        "0": "blocks/stone_slab_top",
-        "1": "blocks/cobblestone",
-        "2": "blocks/obsidian"
+    	"particle": "block/obsidian",
+        "0": "block/smooth_stone",
+        "1": "block/cobblestone",
+        "2": "block/obsidian"
     },
     "elements": [
         {

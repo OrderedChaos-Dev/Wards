@@ -1,6 +1,6 @@
 {
 	"variants":
 	{
-		"normal": { "model": "wards:ward"}
+		"": { "model": "wards:block/ward"}
 	}
 }
