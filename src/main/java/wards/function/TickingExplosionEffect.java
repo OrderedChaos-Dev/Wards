@@ -7,5 +7,4 @@ public class TickingExplosionEffect extends Effect {
 	public TickingExplosionEffect(EffectType typeIn, int liquidColorIn) {
 		super(typeIn, liquidColorIn);
 	}
-	
 }

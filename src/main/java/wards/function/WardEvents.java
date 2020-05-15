@@ -1,13 +1,17 @@
 package wards.function;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.storage.loot.LootPool;
 import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.TableLootEntry;
 import net.minecraftforge.event.LootTableLoadEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import wards.Wards;
@@ -27,6 +31,25 @@ public class WardEvents {
 					double y = entity.getPosYRandom();
 					double z = entity.getPosZRandom(0.3F);
 					entity.getEntityWorld().addParticle(ParticleTypes.SMOKE, x, y, z, 0, 0, 0);
+				}
+			}
+		}
+	}
+	
+	@SubscribeEvent
+	public void frenzy(LivingDeathEvent event) {
+		DamageSource ds = event.getSource();
+		if(ds.getTrueSource() instanceof PlayerEntity) {
+			PlayerEntity player = (PlayerEntity)ds.getTrueSource();
+			EffectInstance eff = player.getActivePotionEffect(WardsRegistryManager.slayer);
+			if(eff != null) {
+				if(!player.getEntityWorld().isRemote) {
+					if(player.getEntityWorld().getRandom().nextBoolean()) {
+						int amp = eff.getAmplifier();
+						player.addPotionEffect(new EffectInstance(Effects.HEALTH_BOOST, 80, amp));
+						player.addPotionEffect(new EffectInstance(Effects.STRENGTH, 80, amp));
+						player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 80, amp));
+					}
 				}
 			}
 		}

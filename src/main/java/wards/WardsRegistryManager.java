@@ -27,7 +27,7 @@ public class WardsRegistryManager {
 	public static Item enchanted_paper;
 	public static Item broken_ward_core, ward_core;
 	
-	public static Effect tickingExplosion;
+	public static Effect tickingExplosion, slayer;
 	
 	@SubscribeEvent
 	public static void registerBlocks(RegistryEvent.Register<Block> event) {
@@ -72,5 +72,9 @@ public class WardsRegistryManager {
 		tickingExplosion = new TickingExplosionEffect(EffectType.HARMFUL, 0);
 		tickingExplosion.setRegistryName(Wards.MOD_ID, "ticking_explosion");
 		event.getRegistry().register(tickingExplosion);
+		
+		slayer = new TickingExplosionEffect(EffectType.BENEFICIAL, 0);
+		slayer.setRegistryName(Wards.MOD_ID, "slayer");
+		event.getRegistry().register(slayer);
 	}
 }

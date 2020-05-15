@@ -34,6 +34,11 @@ public class WardsConfigDefaults {
 		/* MOD INTEGRATION */
 		//QUARK
 		addTo(ACCEPTED_ITEMS, "quark:ancient_tome");
+		
+		//CHARM
+		addTo(FORTITUDE_ENCHANTMENTS, "charm:curse_break");
+		addTo(CURSE_ENCHANTMENTS, "charm:leeching_curse");
+		addTo(KNOWLEDGE_ENCHANTMENTS, "charm:homing", "charm:magnetic", "charm:salvage");
 	}
 	
 	@SafeVarargs

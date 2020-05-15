@@ -104,7 +104,7 @@ public class WardEnchantmentType {
 		} else if(this == DESTRUCTION) {
 			entity.addPotionEffect(new EffectInstance(Effects.ABSORPTION, this.getInterval(), Math.min(level, 3)));
 		} else if(this == SLAYER) {
-			entity.addPotionEffect(new EffectInstance(Effects.HEALTH_BOOST, this.getInterval(), Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(WardsRegistryManager.slayer, this.getInterval(), Math.min(level, 3)));
 		} else if(this == HASTE) {
 			entity.addPotionEffect(new EffectInstance(Effects.SPEED, this.getInterval(), Math.min(level, 3)));
 		} else if(this == KNOWLEDGE) {
