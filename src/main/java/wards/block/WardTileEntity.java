@@ -1,6 +1,5 @@
 package wards.block;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -12,7 +11,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
@@ -28,6 +26,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import wards.WardsConfig;
 import wards.WardsRegistryManager;
 import wards.function.WardEnchantmentType;
 
@@ -36,7 +35,6 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	private ItemStack book;
 	private int power;
 	private int maxPower = 24000 * 3;
-	public static List<Item> acceptedBooks = new ArrayList<Item>();
 	
 	private boolean canWard;
 	
@@ -281,7 +279,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	
 	public boolean replaceBook(ItemStack stack, BlockPos pos) {
 		if(this.getBook().isEmpty()) {
-			if(acceptedBooks.contains(stack.getItem())) {
+			if(WardsConfig.acceptedItems.get().contains(stack.getItem().getRegistryName().toString())) {
 				this.setBook(stack);
 				return true;
 			}

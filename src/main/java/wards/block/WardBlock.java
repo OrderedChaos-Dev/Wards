@@ -8,6 +8,7 @@ import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ContainerBlock;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
@@ -55,14 +56,28 @@ public class WardBlock extends ContainerBlock {
 					((WardTileEntity)tileentity).addFuel(powerSources.get(registryName), true);
 					if(!player.isCreative())
 						item.shrink(1);
-				} else if(((WardTileEntity)tileentity).replaceBook(item.copy(), pos)) {
-					if(!player.isCreative())
-						item.shrink(1);
+				} else if(WardsConfig.acceptedItems.get().contains(item.getItem().getRegistryName().toString())) {
+					if(((WardTileEntity)tileentity).replaceBook(item.copy(), pos)) {
+						if(!player.isCreative())
+							item.shrink(1);
+					}
 				}
 			}
 		}
 
 		return ActionResultType.SUCCESS;
+	}
+	
+	@Override
+	public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving) {
+		TileEntity te = world.getTileEntity(pos);
+		if(te instanceof WardTileEntity) {
+			if(!((WardTileEntity)te).getBook().isEmpty()) {
+				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ((WardTileEntity) te).getBook());
+			}
+		}
+		
+		super.onReplaced(state, world, pos, newState, isMoving);
 	}
 	
 	@Override

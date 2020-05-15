@@ -2,7 +2,6 @@ package wards;
 
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
@@ -29,50 +28,27 @@ public class WardsConfig {
 	public static ForgeConfigSpec.ConfigValue<List<String>> knowledgeEnchantments;
 	public static ForgeConfigSpec.ConfigValue<List<String>> curseEnchantments;
 	
-	static {
-		HashMap<String, Integer> fuelDefaults = new HashMap<String, Integer>();
-		fuelDefaults.put("minecraft:lapis_lazuli", 12000);
-		fuelDefaults.put("wards:enchanted_paper", 18000);
-		
+	static {		
 		COMMON_BUILDER.comment("Wards Settings").push("Wards");
 		COMMON_BUILDER.comment("Items").push("Items");
-		acceptedItems = COMMON_BUILDER.comment("Accepted Items").define("acceptedItems",
-				Arrays.asList("minecraft:enchanted_book"));
-		powerSources = COMMON_BUILDER.comment("Power Sources").define("powerSources",
-				Arrays.asList("minecraft:lapis_lazuli-12000", "wards:enchanted_paper-18000"));
+
+		acceptedItems = COMMON_BUILDER.comment("Accepted Items").define("acceptedItems",WardsConfigDefaults.ACCEPTED_ITEMS);
+		powerSources = COMMON_BUILDER.comment("Power Sources").define("powerSources",WardsConfigDefaults.POWER_SOURCES);
 		
 		COMMON_BUILDER.pop();
 		COMMON_BUILDER.comment("Enchantments").push("Enchantments");
-		combatEnchantments = COMMON_BUILDER.comment("Combat Enchantments").define("combatEnchantments", 
-				Arrays.asList("minecraft:sharpness", "minecraft:knockback", "minecraft:power", "minecraft:punch", "minecraft:riptide"));
+		combatEnchantments = COMMON_BUILDER.comment("Combat Enchantments").define("combatEnchantments", WardsConfigDefaults.POWER_SOURCES);
 		
-		fortitudeEnchantments = COMMON_BUILDER.comment("Fortitude Enchantments").define("fortitudeEnchantments",
-				Arrays.asList("minecraft:protection", "minecraft:projectile_protection", "minecraft:thorns", "minecraft:unbreaking", "minecraft:feather_falling"));
-		
-		fireEnchantments = COMMON_BUILDER.comment("Fire Enchantments").define("fireEnchantments",
-				Arrays.asList("minecraft:fire_protection", "minecraft:fire_aspect", "minecraft:flame"));
-		
-		waterEnchantments = COMMON_BUILDER.comment("Water Enchantments").define("waterEnchantments",
-				Arrays.asList("minecraft:respiration", "minecraft:aqua_affinity", "minecraft:depth_strider", "minecraft:frost_walker"));
-		
-		luckEnchantments = COMMON_BUILDER.comment("Luck Enchantments").define("luckEnchantments",
-				Arrays.asList("minecraft:looting", "minecraft:silk_touch", "minecraft:fortune", "minecraft:luck_of_the_sea", "minecraft:lure"));
-		
-		destructionEnchantments = COMMON_BUILDER.comment("Destruction Enchantments").define("destructionEnchantments",
-				Arrays.asList("minecraft:blast_protection", "minecraft:multishot", "minecraft:sweeping", "minecraft:channeling"));
-		
-		slayerEnchantments = COMMON_BUILDER.comment("Slayer Enchantments").define("slayerEnchantments",
-				Arrays.asList("minecraft:smite", "minecraft:bane_of_arthropods", "minecraft:impaling", "minecraft:piercing"));
-		
-		hasteEnchantments = COMMON_BUILDER.comment("Haste Enchantments").define("hasteEnchantments",
-				Arrays.asList("minecraft:efficiency", "minecraft:quick_charge"));
-		
-		knowledgeEnchantments = COMMON_BUILDER.comment("Knowledge Enchantments").define("knowledgeEnchantments",
-				Arrays.asList("minecraft:infinity", "minecraft:mending", "minecraft:loyalty"));
-		
-		curseEnchantments = COMMON_BUILDER.comment("Curse Enchantments").define("curseEnchantments",
-				Arrays.asList("minecraft:binding_curse", "minecraft:vanishing_curse"));
-		
+		fortitudeEnchantments = COMMON_BUILDER.comment("Fortitude Enchantments").define("fortitudeEnchantments", WardsConfigDefaults.FORTITUDE_ENCHANTMENTS);
+		fireEnchantments = COMMON_BUILDER.comment("Fire Enchantments").define("fireEnchantments", WardsConfigDefaults.FIRE_ENCHANTMENTS);
+		waterEnchantments = COMMON_BUILDER.comment("Water Enchantments").define("waterEnchantments", WardsConfigDefaults.WATER_ENCHANTMENTS);
+		luckEnchantments = COMMON_BUILDER.comment("Luck Enchantments").define("luckEnchantments", WardsConfigDefaults.LUCK_ENCHANTMENTS);
+		destructionEnchantments = COMMON_BUILDER.comment("Destruction Enchantments").define("destructionEnchantments", WardsConfigDefaults.DESTRUCTION_ENCHANTMENTS);
+		slayerEnchantments = COMMON_BUILDER.comment("Slayer Enchantments").define("slayerEnchantments", WardsConfigDefaults.SLAYER_ENCHANTMENTS);
+		hasteEnchantments = COMMON_BUILDER.comment("Haste Enchantments").define("hasteEnchantments", WardsConfigDefaults.HASTE_ENCHANTMENTS);
+		knowledgeEnchantments = COMMON_BUILDER.comment("Knowledge Enchantments").define("knowledgeEnchantments", WardsConfigDefaults.KNOWLEDGE_ENCHANTMENTS);
+		curseEnchantments = COMMON_BUILDER.comment("Curse Enchantments").define("curseEnchantments", WardsConfigDefaults.CURSE_ENCHANTMENTS);
+
 		COMMON_BUILDER.pop(2);
 		COMMON_CONFIG = COMMON_BUILDER.build();
 	}
