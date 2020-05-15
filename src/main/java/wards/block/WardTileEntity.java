@@ -8,7 +8,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.monster.MonsterEntity;
+import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
@@ -147,7 +147,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 										double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
 										double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
 										
-										if(target instanceof MonsterEntity && redstoneStrength == 0) {
+										if(target instanceof IMob && redstoneStrength == 0) {
 											for(IParticleData particle : wardType.getParticles())  {
 												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
 												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
@@ -159,7 +159,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 										}
 									}
 								}
-								if(target instanceof MonsterEntity && redstoneStrength == 0) {
+								if(target instanceof IMob && redstoneStrength == 0) {
 									wardType.expelMagic(this, target, primaryEnchantLevel);
 									this.subtractFuel(20);
 								} else if(target instanceof PlayerEntity) {
@@ -197,7 +197,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 											double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
 											double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
 
-											if (target instanceof MonsterEntity && redstoneStrength == 0) {
+											if (target instanceof IMob && redstoneStrength == 0) {
 												for (IParticleData particle : wardType2.getParticles()) {
 													this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
 													this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
@@ -210,7 +210,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 									}
 								}
 								
-								if(target instanceof MonsterEntity && redstoneStrength == 0) {
+								if(target instanceof IMob && redstoneStrength == 0) {
 									wardType.expelMagic(this, target, primaryEnchantLevel);				
 								} else if(target instanceof PlayerEntity) {
 									wardType.empowerPlayer(this, (PlayerEntity)target, primaryEnchantLevel);
