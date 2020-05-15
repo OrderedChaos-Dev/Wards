@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
-import net.minecraft.item.Items;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -16,7 +15,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
-import wards.block.WardTileEntity;
 import wards.client.WardTileEntityRenderer;
 import wards.function.WardEvents;
 
@@ -35,7 +33,6 @@ public class Wards {
 	}
 	
 	private void commonSetup(FMLCommonSetupEvent event) {
-		WardTileEntity.acceptedBooks.add(Items.ENCHANTED_BOOK);
 		MinecraftForge.EVENT_BUS.register(new WardEvents());
 	}
 	
@@ -45,6 +42,6 @@ public class Wards {
 	}
 	
 	private void loadComplete(FMLLoadCompleteEvent event) {
-
+		
 	}
 }

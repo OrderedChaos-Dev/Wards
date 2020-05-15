@@ -66,7 +66,8 @@ public class WardEnchantmentType {
 			if(eff != null) {
 				int amp = eff.getAmplifier();
 				if(amp == 1) {
-					entity.getEntityWorld().createExplosion(null, DamageSource.MAGIC, entity.getPosX(), entity.getPosY(), entity.getPosZ(), 0.5F + (0.25F * level), false, Mode.NONE);
+					entity.getEntityWorld().createExplosion(null, DamageSource.MAGIC, entity.getPosX(), entity.getPosY(), entity.getPosZ(), 0.5F + (0.4F * level), false, Mode.NONE);
+					entity.attackEntityFrom(DamageSource.MAGIC, 1.0F + (0.75F * (level - 1)));
 					entity.removePotionEffect(WardsRegistryManager.tickingExplosion);
 				} else {
 					entity.addPotionEffect(new EffectInstance(WardsRegistryManager.tickingExplosion, 200, amp + 1));		

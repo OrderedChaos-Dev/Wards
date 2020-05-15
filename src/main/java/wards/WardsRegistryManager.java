@@ -5,6 +5,8 @@ import net.minecraft.block.material.Material;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Rarity;
 import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectType;
 import net.minecraft.tileentity.TileEntityType;
@@ -22,6 +24,7 @@ public class WardsRegistryManager {
 
 	public static Block ward;
 	public static TileEntityType<WardTileEntity> ward_te;
+	public static Item enchanted_paper;
 	
 	public static Effect tickingExplosion;
 	
@@ -34,6 +37,18 @@ public class WardsRegistryManager {
 		BlockItem item = new BlockItem(ward, new Item.Properties().group(ItemGroup.DECORATIONS));
 		item.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
 		ForgeRegistries.ITEMS.register(item);
+	}
+	
+	@SubscribeEvent
+	public static void registerItems(RegistryEvent.Register<Item> event) {
+		enchanted_paper = new Item(new Item.Properties().group(ItemGroup.MISC).rarity(Rarity.UNCOMMON)) {
+			@Override
+			public boolean hasEffect(ItemStack stack) {
+				return true;
+			}
+		};
+		enchanted_paper.setRegistryName(Wards.MOD_ID, "enchanted_paper");
+		event.getRegistry().register(enchanted_paper);
 	}
 	
 	@SubscribeEvent

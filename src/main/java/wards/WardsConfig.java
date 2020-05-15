@@ -2,6 +2,7 @@ package wards;
 
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
@@ -14,6 +15,8 @@ public class WardsConfig {
 	public static ForgeConfigSpec COMMON_CONFIG;
 	
 	public static ForgeConfigSpec.ConfigValue<List<String>> acceptedItems;
+	public static ForgeConfigSpec.ConfigValue<List<String>> powerSources;
+	
 	public static ForgeConfigSpec.ConfigValue<List<String>> combatEnchantments;
 	public static ForgeConfigSpec.ConfigValue<List<String>> fortitudeEnchantments;
 	public static ForgeConfigSpec.ConfigValue<List<String>> fireEnchantments;
@@ -27,10 +30,16 @@ public class WardsConfig {
 	public static ForgeConfigSpec.ConfigValue<List<String>> curseEnchantments;
 	
 	static {
+		HashMap<String, Integer> fuelDefaults = new HashMap<String, Integer>();
+		fuelDefaults.put("minecraft:lapis_lazuli", 12000);
+		fuelDefaults.put("wards:enchanted_paper", 18000);
+		
 		COMMON_BUILDER.comment("Wards Settings").push("Wards");
 		COMMON_BUILDER.comment("Items").push("Items");
 		acceptedItems = COMMON_BUILDER.comment("Accepted Items").define("acceptedItems",
 				Arrays.asList("minecraft:enchanted_book"));
+		powerSources = COMMON_BUILDER.comment("Power Sources").define("powerSources",
+				Arrays.asList("minecraft:lapis_lazuli-12000", "wards:enchanted_paper-18000"));
 		
 		COMMON_BUILDER.pop();
 		COMMON_BUILDER.comment("Enchantments").push("Enchantments");

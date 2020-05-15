@@ -1,12 +1,14 @@
 package wards.block;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ContainerBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
@@ -17,6 +19,8 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import wards.Wards;
+import wards.WardsConfig;
 
 public class WardBlock extends ContainerBlock {
 	
@@ -25,8 +29,19 @@ public class WardBlock extends ContainerBlock {
 	private static final VoxelShape PILLAR = Block.makeCuboidShape(5.0D, 2.0D, 5.0D, 11.0D, 13.0D, 11.0D);
 	private static final VoxelShape SHAPE = VoxelShapes.or(BASE, RAISED_BASE, PILLAR);
 	
+	private Map<String, Integer> powerSources = new HashMap<String, Integer>();
+	
 	public WardBlock(Block.Properties properties) {
 		super(properties);
+		
+		for(String s : WardsConfig.powerSources.get()) {
+			String[] data = s.split("-");
+			if(data.length == 2) {
+				powerSources.put(data[0], Integer.valueOf(data[1]));
+			} else {
+				Wards.LOGGER.warn("Warning: invalid token in powerSources config option: " + s);
+			}
+		}
 	}
 	
 	@Override
@@ -35,9 +50,9 @@ public class WardBlock extends ContainerBlock {
 			TileEntity tileentity = world.getTileEntity(pos);
 			if (tileentity instanceof WardTileEntity) {
 				ItemStack item = player.getHeldItem(hand);
-				
-				if(item.getItem() == Items.LAPIS_LAZULI) {
-					((WardTileEntity)tileentity).addFuel(12000, true);
+				String registryName = item.getItem().getRegistryName().toString();
+				if(powerSources.containsKey(registryName)) {
+					((WardTileEntity)tileentity).addFuel(powerSources.get(registryName), true);
 					if(!player.isCreative())
 						item.shrink(1);
 				} else if(((WardTileEntity)tileentity).replaceBook(item.copy(), pos)) {
