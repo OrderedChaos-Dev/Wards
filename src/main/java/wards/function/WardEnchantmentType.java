@@ -92,26 +92,26 @@ public class WardEnchantmentType {
 	
 	public void empowerPlayer(WardTileEntity ward, PlayerEntity entity, int level) {
 		if(this == COMBAT) {
-			entity.addPotionEffect(new EffectInstance(Effects.STRENGTH, 20 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.STRENGTH, this.getInterval(), Math.min(level, 3)));
 		} else if(this == FORTITUDE) {
-			entity.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 20 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.RESISTANCE, this.getInterval(), Math.min(level, 3)));
 		} else if(this == FIRE) {
-			entity.addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE, 20 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE, this.getInterval(), Math.min(level, 3)));
 		} else if(this == WATER) {
-			entity.addPotionEffect(new EffectInstance(Effects.WATER_BREATHING, 20 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.WATER_BREATHING, this.getInterval(), Math.min(level, 3)));
 		} else if(this == LUCK) {
-			entity.addPotionEffect(new EffectInstance(Effects.LUCK, 20 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.LUCK, this.getInterval(), Math.min(level, 3)));
 		} else if(this == DESTRUCTION) {
-			entity.addPotionEffect(new EffectInstance(Effects.ABSORPTION, 20 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.ABSORPTION, this.getInterval(), Math.min(level, 3)));
 		} else if(this == SLAYER) {
-			entity.addPotionEffect(new EffectInstance(Effects.HEALTH_BOOST, 20 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.HEALTH_BOOST, this.getInterval(), Math.min(level, 3)));
 		} else if(this == HASTE) {
-			entity.addPotionEffect(new EffectInstance(Effects.SPEED, 20 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.SPEED, this.getInterval(), Math.min(level, 3)));
 		} else if(this == KNOWLEDGE) {
-			entity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, 50 * level, Math.min(level, 3)));
-			entity.addPotionEffect(new EffectInstance(Effects.INVISIBILITY, 50 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, this.getInterval(), Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.INVISIBILITY, this.getInterval(), Math.min(level, 3)));
 		} else if(this == CURSE) {
-			entity.addPotionEffect(new EffectInstance(Effects.POISON, 20 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.POISON, this.getInterval(), Math.min(level, 3)));
 		}
 	}
 	

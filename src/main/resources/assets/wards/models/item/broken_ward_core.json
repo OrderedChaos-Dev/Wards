@@ -1,0 +1,6 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "wards:item/broken_ward_core"
+    }
+}

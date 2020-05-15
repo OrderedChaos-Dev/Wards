@@ -35,7 +35,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 
 	private ItemStack book;
 	private int power;
-	private int maxPower = 24000 * 3;
+	private int maxPower = 100000;
 	
 	private boolean canWard;
 	

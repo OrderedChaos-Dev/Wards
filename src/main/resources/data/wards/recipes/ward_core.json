@@ -1,0 +1,23 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"pattern": [
+		" O ",
+		"DCD",
+		" O "
+	],
+	"key": {
+		"O": {
+			"item": "minecraft:obsidian"
+		},
+		"D": {
+			"item": "minecraft:diamond"
+		},
+		"C": {
+			"item": "wards:broken_ward_core"
+		}
+	},
+	"result": {
+		"item": "wards:ward_core",
+		"count": 1
+	}
+}

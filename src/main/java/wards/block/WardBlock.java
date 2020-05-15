@@ -65,7 +65,9 @@ public class WardBlock extends ContainerBlock {
 						if(!player.isCreative())
 							item.shrink(1);
 					} else if(WardsConfig.acceptedItems.get().contains(item.getItem().getRegistryName().toString())) {
-						if(((WardTileEntity)tileentity).replaceBook(item.copy(), pos)) {
+						ItemStack newBook = item.copy();
+						newBook.setCount(1);
+						if(((WardTileEntity)tileentity).replaceBook(newBook, pos)) {
 							if(!player.isCreative())
 								item.shrink(1);
 						}

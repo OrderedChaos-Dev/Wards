@@ -1,0 +1,29 @@
+{
+	"type": "minecraft:crafting_shaped",
+	"pattern": [
+		" O ",
+		"DWD",
+		"SCS"
+	],
+	"key": {
+		"O": {
+			"item": "minecraft:obsidian"
+		},
+		"D": {
+			"item": "minecraft:diamond"
+		},
+		"S": {
+			"item": "minecraft:smooth_stone_slab"
+		},
+		"C": {
+			"item": "minecraft:cobblestone"
+		},
+		"W": {
+			"item": "wards:ward_core"
+		}
+	},
+	"result": {
+		"item": "wards:ward",
+		"count": 1
+	}
+}

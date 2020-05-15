@@ -25,6 +25,7 @@ public class WardsRegistryManager {
 	public static Block ward;
 	public static TileEntityType<WardTileEntity> ward_te;
 	public static Item enchanted_paper;
+	public static Item broken_ward_core, ward_core;
 	
 	public static Effect tickingExplosion;
 	
@@ -49,6 +50,14 @@ public class WardsRegistryManager {
 		};
 		enchanted_paper.setRegistryName(Wards.MOD_ID, "enchanted_paper");
 		event.getRegistry().register(enchanted_paper);
+		
+		broken_ward_core = new Item(new Item.Properties().group(ItemGroup.MISC).rarity(Rarity.UNCOMMON));
+		broken_ward_core.setRegistryName(Wards.MOD_ID, "broken_ward_core");
+		event.getRegistry().register(broken_ward_core);
+		
+		ward_core = new Item(new Item.Properties().group(ItemGroup.MISC).rarity(Rarity.UNCOMMON));
+		ward_core.setRegistryName(Wards.MOD_ID, "ward_core");
+		event.getRegistry().register(ward_core);
 	}
 	
 	@SubscribeEvent

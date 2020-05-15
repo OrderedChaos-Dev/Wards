@@ -1,4 +1,6 @@
 {
 	"block.wards.ward": "Ward",
-	"item.wards.enchanted_paper": "Enchanted Paper"
+	"item.wards.enchanted_paper": "Enchanted Paper",
+	"item.wards.broken_ward_core": "Broken Ward Core",
+	"item.wards.ward_core": "Ward Core"
 }
