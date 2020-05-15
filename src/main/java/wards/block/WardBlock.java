@@ -61,6 +61,8 @@ public class WardBlock extends ContainerBlock {
 						if(!player.isCreative())
 							item.shrink(1);
 					}
+				} else {
+					((WardTileEntity)tileentity).dropBook();
 				}
 			}
 		}
@@ -76,7 +78,6 @@ public class WardBlock extends ContainerBlock {
 				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ((WardTileEntity) te).getBook());
 			}
 		}
-		
 		super.onReplaced(state, world, pos, newState, isMoving);
 	}
 	

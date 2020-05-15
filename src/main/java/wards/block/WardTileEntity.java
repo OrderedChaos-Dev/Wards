@@ -12,6 +12,7 @@ import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
@@ -223,7 +224,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 		this.bookRotationPrev = this.bookRotation;
 		this.tRot += 0.02F;
 		
-		if(this.canWard) {
+		if(this.canWard || this.getBook().getItem() == Items.BOOK) {
 			bookSpread += 0.1F;
 		} else {
 			bookSpread -= 0.1F;
@@ -257,7 +258,11 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 			f2 += ((float) Math.PI * 2F);
 		}
 		this.bookRotation += f2 * 0.4F;
-		this.bookSpread = MathHelper.clamp(this.bookSpread, 0.0F, 1.0F * (float)((double)this.power / (double)this.maxPower));
+		
+		if(this.getBook().getItem() != Items.BOOK)
+			this.bookSpread = MathHelper.clamp(this.bookSpread, 0.0F, 1.0F * (float)((double)this.power / (double)this.maxPower));
+		else
+			this.bookSpread = MathHelper.clamp(this.bookSpread, 0.0F, 1.0F);
 		this.tickCount++;
 		this.pageFlipPrev = this.pageFlip;
 		float f = (this.flipT - this.pageFlip) * 0.4F;
