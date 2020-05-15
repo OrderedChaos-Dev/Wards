@@ -1,6 +1,7 @@
 {
 	"variants":
 	{
-		"": { "model": "wards:block/ward"}
+		"admin_mode=false": { "model": "wards:block/ward"},
+		"admin_mode=true": { "model": "wards:block/admin_ward"}
 	}
 }

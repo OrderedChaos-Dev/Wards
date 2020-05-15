@@ -30,13 +30,13 @@ public class WardsRegistryManager {
 	
 	@SubscribeEvent
 	public static void registerBlocks(RegistryEvent.Register<Block> event) {
-		ward = new WardBlock(Block.Properties.create(Material.ROCK).lightValue(10).hardnessAndResistance(5.0F, 12.0F));
+		ward = new WardBlock(Block.Properties.create(Material.ROCK).lightValue(10).hardnessAndResistance(5.0F, 40.0F));
 		ward.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
 		event.getRegistry().register(ward);
 		
-		BlockItem item = new BlockItem(ward, new Item.Properties().group(ItemGroup.DECORATIONS));
-		item.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
-		ForgeRegistries.ITEMS.register(item);
+		BlockItem ward_item = new BlockItem(ward, new Item.Properties().group(ItemGroup.DECORATIONS));
+		ward_item.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
+		ForgeRegistries.ITEMS.register(ward_item);
 	}
 	
 	@SubscribeEvent

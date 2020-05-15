@@ -18,9 +18,8 @@ public class WardsConfigDefaults {
 	public static final List<String> CURSE_ENCHANTMENTS = new ArrayList<String>();
 	
 	static {
-		ACCEPTED_ITEMS.add("minecraft:enchanted_book");
-		POWER_SOURCES.add("minecraft:lapis_lazuli-12000");
-		POWER_SOURCES.add("minecraft:enchanted_paper-18000");
+		addTo(ACCEPTED_ITEMS, "minecraft:enchanted_book", "minecraft:book");
+		addTo(POWER_SOURCES, "minecraft:lapis_lazuli-12000", "minecraft:enchanted_paper-18000");
 		addTo(COMBAT_ENCHANTMENTS, "minecraft:sharpness", "minecraft:knockback", "minecraft:power", "minecraft:punch", "minecraft:riptide");
 		addTo(FORTITUDE_ENCHANTMENTS, "minecraft:protection", "minecraft:projectile_protection", "minecraft:thorns", "minecraft:unbreaking", "minecraft:feather_falling");
 		addTo(FIRE_ENCHANTMENTS, "minecraft:fire_protection", "minecraft:fire_aspect", "minecraft:flame");

@@ -10,6 +10,9 @@ import net.minecraft.block.ContainerBlock;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
@@ -30,10 +33,13 @@ public class WardBlock extends ContainerBlock {
 	private static final VoxelShape PILLAR = Block.makeCuboidShape(5.0D, 2.0D, 5.0D, 11.0D, 13.0D, 11.0D);
 	private static final VoxelShape SHAPE = VoxelShapes.or(BASE, RAISED_BASE, PILLAR);
 	
+	public static final BooleanProperty ADMIN_MODE = BooleanProperty.create("admin_mode");
+	
 	private Map<String, Integer> powerSources = new HashMap<String, Integer>();
 	
 	public WardBlock(Block.Properties properties) {
 		super(properties);
+		this.setDefaultState(this.stateContainer.getBaseState().with(ADMIN_MODE, false));
 		
 		for(String s : WardsConfig.powerSources.get()) {
 			String[] data = s.split("-");
@@ -52,17 +58,22 @@ public class WardBlock extends ContainerBlock {
 			if (tileentity instanceof WardTileEntity) {
 				ItemStack item = player.getHeldItem(hand);
 				String registryName = item.getItem().getRegistryName().toString();
-				if(powerSources.containsKey(registryName)) {
-					((WardTileEntity)tileentity).addFuel(powerSources.get(registryName), true);
-					if(!player.isCreative())
-						item.shrink(1);
-				} else if(WardsConfig.acceptedItems.get().contains(item.getItem().getRegistryName().toString())) {
-					if(((WardTileEntity)tileentity).replaceBook(item.copy(), pos)) {
+				
+				if(!state.get(ADMIN_MODE) || player.canUseCommandBlock()) {
+					if(powerSources.containsKey(registryName)) {
+						((WardTileEntity)tileentity).addFuel(powerSources.get(registryName), true);
 						if(!player.isCreative())
 							item.shrink(1);
+					} else if(WardsConfig.acceptedItems.get().contains(item.getItem().getRegistryName().toString())) {
+						if(((WardTileEntity)tileentity).replaceBook(item.copy(), pos)) {
+							if(!player.isCreative())
+								item.shrink(1);
+						}
+					} else if(item.getItem() == Items.COMMAND_BLOCK) {
+						world.setBlockState(pos, this.getDefaultState().with(ADMIN_MODE, !state.get(ADMIN_MODE)));
+					} else {
+						((WardTileEntity)tileentity).dropBook();
 					}
-				} else {
-					((WardTileEntity)tileentity).dropBook();
 				}
 			}
 		}
@@ -79,6 +90,14 @@ public class WardBlock extends ContainerBlock {
 			}
 		}
 		super.onReplaced(state, world, pos, newState, isMoving);
+	}
+	
+	@Override
+	public float getPlayerRelativeBlockHardness(BlockState state, PlayerEntity player, IBlockReader worldIn, BlockPos pos) {
+		if(state.get(ADMIN_MODE))
+			return -1.0F;
+		else
+			return super.getPlayerRelativeBlockHardness(state, player, worldIn, pos);
 	}
 	
 	@Override
@@ -104,5 +123,10 @@ public class WardBlock extends ContainerBlock {
 	@Override
 	public BlockRenderType getRenderType(BlockState state) {
 		return BlockRenderType.MODEL;
+	}
+	
+	@Override
+	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+		builder.add(ADMIN_MODE);
 	}
 }

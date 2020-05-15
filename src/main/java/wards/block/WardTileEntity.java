@@ -62,6 +62,10 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 		Random rand = this.getWorld().getRandom();
 		this.updateBookRotation();
 		
+		boolean adminMode = this.getBlockState().get(WardBlock.ADMIN_MODE);
+		if(adminMode)
+			this.setFuel(this.maxPower);
+		
 		if(!this.getBook().isEmpty() && this.power > 0) {
 			Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(this.getBook());
 			Enchantment primaryEnchant = null;
@@ -89,27 +93,30 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 			
 			this.canWard = true;
 			int redstoneStrength = this.getWorld().getStrongPower(this.getPos());
-			if(redstoneStrength >= 12) {
-				this.canWard = false;
-			} else {
-				for(BlockPos pos : BlockPos.getAllInBoxMutable(pos1, pos2)) {
-					if (!pos.equals(this.getPos())) {
-						if (this.getWorld().getBlockState(pos) == WardsRegistryManager.ward.getDefaultState()) {
-							if(this.getWorld().getTileEntity(pos) instanceof WardTileEntity) {
-								//disable if other powered wards nearby
-								if(((WardTileEntity)this.getWorld().getTileEntity(pos)).power > 0
-										&& !((WardTileEntity)this.getWorld().getTileEntity(pos)).getBook().isEmpty()) {
-									this.canWard = false;
-									if(this.getWorld().getGameTime() % 20 == 0) {
-										double xDiff = (pos.getX() - this.getPos().getX()) / 14.0;
-										double yDiff = (pos.getY() - this.getPos().getY()) / 14.0;
-										double zDiff = (pos.getZ() - this.getPos().getZ()) / 14.0;
-										for (int i = 0; i <= 14.0; i++) {
-											double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
-											double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
-											double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
+			
+			if(!adminMode) {
+				if(redstoneStrength >= 12) {
+					this.canWard = false;
+				} else {
+					for(BlockPos pos : BlockPos.getAllInBoxMutable(pos1, pos2)) {
+						if (!pos.equals(this.getPos())) {
+							if (this.getWorld().getBlockState(pos) == WardsRegistryManager.ward.getDefaultState()) {
+								if(this.getWorld().getTileEntity(pos) instanceof WardTileEntity) {
+									//disable if other powered wards nearby
+									if(((WardTileEntity)this.getWorld().getTileEntity(pos)).power > 0
+											&& !((WardTileEntity)this.getWorld().getTileEntity(pos)).getBook().isEmpty()) {
+										this.canWard = false;
+										if(this.getWorld().getGameTime() % 20 == 0) {
+											double xDiff = (pos.getX() - this.getPos().getX()) / 14.0;
+											double yDiff = (pos.getY() - this.getPos().getY()) / 14.0;
+											double zDiff = (pos.getZ() - this.getPos().getZ()) / 14.0;
+											for (int i = 0; i <= 14.0; i++) {
+												double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
+												double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
+												double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
 
-											this.getWorld().addParticle(RedstoneParticleData.REDSTONE_DUST, true, xCoord, yCoord, zCoord, 0, 0, 0);
+												this.getWorld().addParticle(RedstoneParticleData.REDSTONE_DUST, true, xCoord, yCoord, zCoord, 0, 0, 0);
+											}
 										}
 									}
 								}
@@ -139,7 +146,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 									double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
 									double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
 									
-									if(target instanceof MonsterEntity && redstoneStrength >= 1) {
+									if(target instanceof MonsterEntity && redstoneStrength == 0) {
 										for(IParticleData particle : wardType.getParticles())  {
 											this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
 											this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
@@ -150,7 +157,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 										this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0, 0, 0);
 									}
 								}
-								if(target instanceof MonsterEntity && redstoneStrength >= 1) {
+								if(target instanceof MonsterEntity && redstoneStrength == 0) {
 									wardType.expelMagic(this, target, primaryEnchantLevel);
 									this.subtractFuel(10);
 								} else if(target instanceof PlayerEntity) {
@@ -187,7 +194,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 										double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
 										double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
 
-										if (target instanceof MonsterEntity && redstoneStrength >= 1) {
+										if (target instanceof MonsterEntity && redstoneStrength == 0) {
 											for (IParticleData particle : wardType2.getParticles()) {
 												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
 												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
@@ -199,7 +206,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 									}
 								}
 								
-								if(target instanceof MonsterEntity && redstoneStrength >= 1) {
+								if(target instanceof MonsterEntity && redstoneStrength == 0) {
 									wardType.expelMagic(this, target, primaryEnchantLevel);				
 								} else if(target instanceof PlayerEntity) {
 									wardType.empowerPlayer(this, (PlayerEntity)target, primaryEnchantLevel);
