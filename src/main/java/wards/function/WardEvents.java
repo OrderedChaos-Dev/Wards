@@ -25,7 +25,7 @@ public class WardEvents {
 		EffectInstance eff = entity.getActivePotionEffect(WardsRegistryManager.tickingExplosion);
 		if(eff != null) {
 			int amp = eff.getAmplifier();
-			if(entity.getEntityWorld().getGameTime() % 20 == 0) {
+			if(entity.getEntityWorld().getGameTime() % 20 == 0 && entity.getEntityWorld().isRemote) {
 				for(int i = 0; i < (amp + 1) * 25; i++) {
 					double x = entity.getPosXRandom(0.3F);
 					double y = entity.getPosYRandom();

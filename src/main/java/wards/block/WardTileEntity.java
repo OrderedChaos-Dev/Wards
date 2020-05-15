@@ -106,7 +106,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 									if(((WardTileEntity)this.getWorld().getTileEntity(pos)).power > 0
 											&& !((WardTileEntity)this.getWorld().getTileEntity(pos)).getBook().isEmpty()) {
 										this.canWard = false;
-										if(this.getWorld().getGameTime() % 20 == 0) {
+										if(this.getWorld().getGameTime() % 20 == 0 && this.getWorld().isRemote) {
 											double xDiff = (pos.getX() - this.getPos().getX()) / 14.0;
 											double yDiff = (pos.getY() - this.getPos().getY()) / 14.0;
 											double zDiff = (pos.getZ() - this.getPos().getZ()) / 14.0;
@@ -138,23 +138,25 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 						List<LivingEntity> entities = this.getWorld().getEntitiesWithinAABB(LivingEntity.class, wardArea);
 						for(LivingEntity target : entities) {
 							if(canSeeTarget(this, target)) {
-								double xDiff = (target.getPosX() - this.getPos().getX() - 0.5) / 14.0; 
-								double yDiff = ((target.getPosY() + (target.getHeight() / 2)) - this.getPos().getY() + 0.5) / 14.0; 
-								double zDiff = (target.getPosZ() - this.getPos().getZ() - 0.5) / 14.0; 
-								for(int i = 0; i <= 14.0; i ++) {
-									double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
-									double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
-									double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
-									
-									if(target instanceof MonsterEntity && redstoneStrength == 0) {
-										for(IParticleData particle : wardType.getParticles())  {
-											this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-											this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-										}
+								if(this.getWorld().isRemote) {
+									double xDiff = (target.getPosX() - this.getPos().getX() - 0.5) / 14.0; 
+									double yDiff = ((target.getPosY() + (target.getHeight() / 2)) - this.getPos().getY() + 0.5) / 14.0; 
+									double zDiff = (target.getPosZ() - this.getPos().getZ() - 0.5) / 14.0; 
+									for(int i = 0; i <= 14.0; i ++) {
+										double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
+										double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
+										double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
 										
-									} else if(target instanceof PlayerEntity) {
-										this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0, 0, 0);
-										this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0, 0, 0);
+										if(target instanceof MonsterEntity && redstoneStrength == 0) {
+											for(IParticleData particle : wardType.getParticles())  {
+												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+											}
+											
+										} else if(target instanceof PlayerEntity) {
+											this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0, 0, 0);
+											this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0, 0, 0);
+										}
 									}
 								}
 								if(target instanceof MonsterEntity && redstoneStrength == 0) {
@@ -168,7 +170,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 						}
 					}
 					
-					if(this.getWorld().getGameTime() % 40 == 0 && rand.nextBoolean()) {
+					if(this.getWorld().getGameTime() % 40 == 0 && rand.nextBoolean() && this.getWorld().isRemote) {
 						for(int i = 0; i < 5 * primaryEnchantLevel; i++) {
 							for(IParticleData particle : wardType.getParticles())  {
 								double xCoord = this.getPos().getX() + 0.5 + 0.25 * (rand.nextDouble() - rand.nextDouble());
@@ -186,22 +188,24 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 							List<LivingEntity> entities = this.getWorld().getEntitiesWithinAABB(LivingEntity.class, wardArea);
 							for (LivingEntity target : entities) {
 								if(canSeeTarget(this, target)) {
-									double xDiff = (target.getPosX() - this.getPos().getX() - 0.5D) / 14.0D;
-									double yDiff = ((target.getPosY() + (target.getHeight() / 2)) - (this.getPos().getY() + 0.5D)) / 14.0D;
-									double zDiff = (target.getPosZ() - this.getPos().getZ() - 0.5D) / 14.0D;
-									for (int i = 0; i <= 14.0; i++) {
-										double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
-										double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
-										double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
+									if(this.getWorld().isRemote) {
+										double xDiff = (target.getPosX() - this.getPos().getX() - 0.5D) / 14.0D;
+										double yDiff = ((target.getPosY() + (target.getHeight() / 2)) - (this.getPos().getY() + 0.5D)) / 14.0D;
+										double zDiff = (target.getPosZ() - this.getPos().getZ() - 0.5D) / 14.0D;
+										for (int i = 0; i <= 14.0; i++) {
+											double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
+											double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
+											double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
 
-										if (target instanceof MonsterEntity && redstoneStrength == 0) {
-											for (IParticleData particle : wardType2.getParticles()) {
-												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+											if (target instanceof MonsterEntity && redstoneStrength == 0) {
+												for (IParticleData particle : wardType2.getParticles()) {
+													this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+													this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+												}
+											} else if (target instanceof PlayerEntity) {
+												this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0,0, 0);
+												this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0,0, 0);
 											}
-										} else if (target instanceof PlayerEntity) {
-											this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0,0, 0);
-											this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0,0, 0);
 										}
 									}
 								}
@@ -220,9 +224,12 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	}
 	
 	public boolean canSeeTarget(WardTileEntity ward, Entity entity) {
-		Vec3d vec3d = new Vec3d(ward.getPos().getX() + 0.5, ward.getPos().getY() + 0.85, ward.getPos().getZ() + 0.5);
+		Vec3d vec3d = new Vec3d(ward.getPos().getX() + 0.5D, ward.getPos().getY() + 0.9D, ward.getPos().getZ() + 0.5D);
 		Vec3d vec3d1 = new Vec3d(entity.getPosX(), entity.getPosYEye(), entity.getPosZ());
-		return ward.getWorld().rayTraceBlocks(new RayTraceContext(vec3d, vec3d1, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS;
+		Vec3d vec3d2 = new Vec3d(entity.getPosX(), entity.getPosY(), entity.getPosZ());
+		return
+			ward.getWorld().rayTraceBlocks(new RayTraceContext(vec3d, vec3d1, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS
+			|| ward.getWorld().rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS;
 	}
 	
 	public void updateBookRotation() {
