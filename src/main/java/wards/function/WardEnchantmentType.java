@@ -84,9 +84,9 @@ public class WardEnchantmentType {
 		} else if(this == HASTE) {
 			entity.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 25 * level, Math.min(level, 3)));
 		} else if(this == KNOWLEDGE) {
-			entity.addPotionEffect(new EffectInstance(Effects.GLOWING, 25 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.GLOWING, 100, Math.min(level, 3)));
 		} else if(this == CURSE) {
-			entity.addPotionEffect(new EffectInstance(Effects.WITHER, 25 * level, Math.min(level, 3)));
+			entity.addPotionEffect(new EffectInstance(Effects.WITHER, 60, Math.min(level, 3)));
 		}
 	}
 	
