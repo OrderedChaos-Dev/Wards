@@ -19,7 +19,7 @@ public class WardsConfigDefaults {
 	
 	static {
 		addTo(ACCEPTED_ITEMS, "minecraft:enchanted_book", "minecraft:book");
-		addTo(POWER_SOURCES, "minecraft:lapis_lazuli-10000", "minecraft:enchanted_paper-15000");
+		addTo(POWER_SOURCES, "minecraft:lapis_lazuli-10000", "wards:enchanted_paper-15000");
 		addTo(COMBAT_ENCHANTMENTS, "minecraft:sharpness", "minecraft:knockback", "minecraft:power", "minecraft:punch", "minecraft:riptide");
 		addTo(FORTITUDE_ENCHANTMENTS, "minecraft:protection", "minecraft:projectile_protection", "minecraft:thorns", "minecraft:unbreaking", "minecraft:feather_falling");
 		addTo(FIRE_ENCHANTMENTS, "minecraft:fire_protection", "minecraft:fire_aspect", "minecraft:flame");
