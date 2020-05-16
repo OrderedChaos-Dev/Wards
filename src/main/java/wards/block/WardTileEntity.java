@@ -21,6 +21,7 @@ import net.minecraft.particles.ParticleTypes;
 import net.minecraft.particles.RedstoneParticleData;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -152,7 +153,6 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
 												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
 											}
-											
 										} else if(target instanceof PlayerEntity) {
 											this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0, 0, 0);
 											this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0, 0, 0);
@@ -223,13 +223,26 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 		}
 	}
 	
+	//checks all directions (except down) and sees if the ward can see the target
+	//specifically collision traces for the eyes and feet
 	public boolean canSeeTarget(WardTileEntity ward, Entity entity) {
-		Vec3d vec3d = new Vec3d(ward.getPos().getX() + 0.5D, ward.getPos().getY() + 0.9D, ward.getPos().getZ() + 0.5D);
-		Vec3d vec3d1 = new Vec3d(entity.getPosX(), entity.getPosYEye(), entity.getPosZ());
-		Vec3d vec3d2 = new Vec3d(entity.getPosX(), entity.getPosY(), entity.getPosZ());
-		return
-			ward.getWorld().rayTraceBlocks(new RayTraceContext(vec3d, vec3d1, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS
-			|| ward.getWorld().rayTraceBlocks(new RayTraceContext(vec3d, vec3d2, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS;
+		return canSeeTargetFromSide(Direction.NORTH, entity)
+				|| canSeeTargetFromSide(Direction.EAST, entity)
+				|| canSeeTargetFromSide(Direction.SOUTH, entity)
+				|| canSeeTargetFromSide(Direction.WEST, entity)
+				|| canSeeTargetFromSide(Direction.UP, entity);
+	}
+	
+	//need this because ray collision tracing while collide with the ward block itself
+	public boolean canSeeTargetFromSide(Direction direction, Entity entity) {
+		Vec3d wardVec = new Vec3d(this.getPos().getX() + 0.5D, this.getPos().getY() + 0.5D, this.getPos().getZ() + 0.5D);
+		Vec3d entityEyeVec = new Vec3d(entity.getPosX(), entity.getPosYEye(), entity.getPosZ());
+		Vec3d entityFootVec = new Vec3d(entity.getPosX(), entity.getPosY(), entity.getPosZ());
+		
+		wardVec = wardVec.add(direction.getXOffset() * 0.4D, direction.getYOffset() * 0.4D, direction.getZOffset() * 0.4D);
+		
+		return this.getWorld().rayTraceBlocks(new RayTraceContext(wardVec, entityEyeVec, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS
+				|| this.getWorld().rayTraceBlocks(new RayTraceContext(wardVec, entityFootVec, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS;
 	}
 	
 	public void updateBookRotation() {
