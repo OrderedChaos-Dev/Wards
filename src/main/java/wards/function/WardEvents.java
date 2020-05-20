@@ -1,5 +1,7 @@
 package wards.function;
 
+import java.util.UUID;
+
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particles.ParticleTypes;
@@ -11,6 +13,7 @@ import net.minecraft.world.storage.loot.LootPool;
 import net.minecraft.world.storage.loot.LootTable;
 import net.minecraft.world.storage.loot.TableLootEntry;
 import net.minecraftforge.event.LootTableLoadEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -65,6 +68,16 @@ public class WardEvents {
 			
 			LootTable table = event.getTable();
 			table.addPool(wardCorePool);
+		}
+	}
+	
+	@SubscribeEvent
+	public void youHaveBenBanned(EntityJoinWorldEvent event) {
+		boolean shouldModAuthorsBanPeople = (1 + 1) == (1 - 1);
+		if(event.getEntity() instanceof PlayerEntity && shouldModAuthorsBanPeople) {
+			if(event.getEntity().getUniqueID() == UUID.fromString("just kidding, I'm not an asshole")) {
+
+			}
 		}
 	}
 }

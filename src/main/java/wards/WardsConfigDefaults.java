@@ -39,6 +39,17 @@ public class WardsConfigDefaults {
 		addTo(FORTITUDE_ENCHANTMENTS, "charm:curse_break");
 		addTo(CURSE_ENCHANTMENTS, "charm:leeching_curse");
 		addTo(KNOWLEDGE_ENCHANTMENTS, "charm:homing", "charm:magnetic", "charm:salvage");
+		
+		//MA ENCHANTS
+		addTo(COMBAT_ENCHANTMENTS, "ma-enchants:true_shot", "ma-enchants:floating", "ma-enchants:paralysis", "ma-enchants:combo");
+		addTo(FIRE_ENCHANTMENTS, "ma-enchants:blazing_walker");
+		addTo(DESTRUCTION_ENCHANTMENTS, "ma-enchants:detonation");
+		addTo(SLAYER_ENCHANTMENTS, "ma-enchants:butchering", "ma-enchants:lifesteal");
+		addTo(HASTE_ENCHANTMENTS, "ma-enchants:reinforced_tip", "ma-enchants:momentum", "ma-enchants:quick_draw",
+				"ma-enchants:faster_attack", "ma-enchants:ice_aspect");
+		addTo(KNOWLEDGE_ENCHANTMENTS, "ma-enchants:timeless", "ma-enchants:stone_mending", "ma-enchants:lumberjack",
+				"ma-enchants:wisdom", "ma-enchants:step_assist", "ma-enchants:night_vision", "ma-enchants:timeless", "ma-enchants:multi_jump");
+		addTo(CURSE_ENCHANTMENTS, "ma-enchants:curse_breaking", "ma-enchants:curse_butterfingers", "ma-enchants:curse_aquaphobia", "ma-enchants:curse_death");
 	}
 	
 	@SafeVarargs
