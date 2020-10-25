@@ -50,9 +50,9 @@ public class WardTileEntityRenderer extends TileEntityRenderer<WardTileEntity> {
 			float f4 = MathHelper.frac(f3 + 0.25F) * 1.6F - 0.3F;
 			float f5 = MathHelper.frac(f3 + 0.75F) * 1.6F - 0.3F;
 			float f6 = MathHelper.lerp(partialTicks, ward.bookSpreadPrev, ward.bookSpread);
-			this.modelBook.func_228247_a_(f, MathHelper.clamp(f4, 0.0F, 1.0F), MathHelper.clamp(f5, 0.0F, 1.0F), f6);
+			this.modelBook.setBookState(f, MathHelper.clamp(f4, 0.0F, 1.0F), MathHelper.clamp(f5, 0.0F, 1.0F), f6);
 			IVertexBuilder ivertexbuilder = TEXTURE_BOOK.getBuffer(bufferIn, RenderType::getEntitySolid);
-			this.modelBook.func_228249_b_(matrixStackIn, ivertexbuilder, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
+			this.modelBook.renderAll(matrixStackIn, ivertexbuilder, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
 		}
 		matrixStackIn.pop();
 	}
