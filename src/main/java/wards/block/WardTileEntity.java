@@ -161,10 +161,10 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 								}
 								if(target instanceof IMob && redstoneStrength == 0) {
 									wardType.expelMagic(this, target, primaryEnchantLevel);
-									this.subtractFuel(20);
+									this.subtractFuel(30);
 								} else if(target instanceof PlayerEntity) {
 									wardType.empowerPlayer(this, (PlayerEntity)target, primaryEnchantLevel);
-									this.subtractFuel(20);
+									this.subtractFuel(30);
 								}
 							}
 						}

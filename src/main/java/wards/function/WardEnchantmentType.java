@@ -40,7 +40,6 @@ public class WardEnchantmentType {
 	}
 	
 	public void expelMagic(WardTileEntity ward, LivingEntity entity, int level) {
-		//object oriented? what's that?
 		if(this == COMBAT) {
 			entity.attackEntityFrom(DamageSource.MAGIC, 1.0F + (0.5F * (level - 1)));
 		} else if(this == FORTITUDE) {

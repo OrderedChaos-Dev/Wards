@@ -61,7 +61,9 @@ public class WardEvents {
 	@SubscribeEvent
 	public void editLootPools(LootTableLoadEvent event) {
 		String name = event.getName().toString();
-		if(name.equals("minecraft:chests/buried_treasure") || name.equals("minecraft:chests/shipwreck_treasure")) {
+		if(name.equals("minecraft:chests/buried_treasure")
+				|| name.equals("minecraft:chests/shipwreck_treasure")
+				|| name.equals("minecraft:chests/shipwreck_supply")) {
 			Wards.LOGGER.info("Adding ward cores to loot table: " + name);
 			LootPool wardCorePool = new LootPool.Builder()
 					.addEntry(TableLootEntry.builder(new ResourceLocation(Wards.MOD_ID, "chests/ward_core"))).build();
