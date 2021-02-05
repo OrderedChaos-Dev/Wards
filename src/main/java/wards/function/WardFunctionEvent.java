@@ -228,7 +228,7 @@ public class WardFunctionEvent
 	@SubscribeEvent
 	public void onBreakingBlock(PlayerEvent.BreakSpeed event)
 	{
-		float speed = event.getOriginalSpeed();
+		float speed = event.getNewSpeed();
 		EntityPlayer player = event.getEntityPlayer();
 		for(PotionEffect effect : player.getActivePotionEffects())
 		{
