@@ -35,14 +35,14 @@ public class WardsRegistryManager {
 		ward.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
 		event.getRegistry().register(ward);
 		
-		BlockItem ward_item = new BlockItem(ward, new Item.Properties().group(ItemGroup.DECORATIONS));
+		BlockItem ward_item = new BlockItem(ward, new Item.Properties().group(WardsItemGroup.INSTANCE));
 		ward_item.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
 		ForgeRegistries.ITEMS.register(ward_item);
 	}
 	
 	@SubscribeEvent
 	public static void registerItems(RegistryEvent.Register<Item> event) {
-		enchanted_paper = new Item(new Item.Properties().group(ItemGroup.MISC).rarity(Rarity.UNCOMMON)) {
+		enchanted_paper = new Item(new Item.Properties().group(WardsItemGroup.INSTANCE).rarity(Rarity.UNCOMMON)) {
 			@Override
 			public boolean hasEffect(ItemStack stack) {
 				return true;
@@ -51,11 +51,11 @@ public class WardsRegistryManager {
 		enchanted_paper.setRegistryName(Wards.MOD_ID, "enchanted_paper");
 		event.getRegistry().register(enchanted_paper);
 		
-		broken_ward_core = new Item(new Item.Properties().group(ItemGroup.MISC).rarity(Rarity.UNCOMMON));
+		broken_ward_core = new Item(new Item.Properties().group(WardsItemGroup.INSTANCE).rarity(Rarity.UNCOMMON));
 		broken_ward_core.setRegistryName(Wards.MOD_ID, "broken_ward_core");
 		event.getRegistry().register(broken_ward_core);
 		
-		ward_core = new Item(new Item.Properties().group(ItemGroup.MISC).rarity(Rarity.UNCOMMON));
+		ward_core = new Item(new Item.Properties().group(WardsItemGroup.INSTANCE).rarity(Rarity.UNCOMMON));
 		ward_core.setRegistryName(Wards.MOD_ID, "ward_core");
 		event.getRegistry().register(ward_core);
 	}
@@ -76,5 +76,19 @@ public class WardsRegistryManager {
 		slayer = new TickingExplosionEffect(EffectType.BENEFICIAL, 0);
 		slayer.setRegistryName(Wards.MOD_ID, "slayer");
 		event.getRegistry().register(slayer);
+	}
+	
+	public static class WardsItemGroup extends ItemGroup {
+		
+		public static final WardsItemGroup INSTANCE = new WardsItemGroup("wards");
+		
+		public WardsItemGroup(String label) {
+			super(label);
+		}
+
+		@Override
+		public ItemStack createIcon() {
+			return new ItemStack(ward);
+		}
 	}
 }

@@ -4,5 +4,6 @@
 	"item.wards.broken_ward_core": "Broken Ward Core",
 	"item.wards.ward_core": "Ward Core",
 	"effect.wards.slayer": "Slayer",
-	"effect.wards.ticking_explosion": "Ticking Explosion"
+	"effect.wards.ticking_explosion": "Ticking Explosion",
+	"itemGroup.wards": "Wards"
 }
