@@ -36,8 +36,7 @@ public class WardsConfig {
 		
 		COMMON_BUILDER.pop();
 		COMMON_BUILDER.comment("Enchantments").push("Enchantments");
-		combatEnchantments = COMMON_BUILDER.comment("Combat Enchantments").define("combatEnchantments", WardsConfigDefaults.POWER_SOURCES);
-		
+		combatEnchantments = COMMON_BUILDER.comment("Combat Enchantments").define("combatEnchantments", WardsConfigDefaults.COMBAT_ENCHANTMENTS);
 		fortitudeEnchantments = COMMON_BUILDER.comment("Fortitude Enchantments").define("fortitudeEnchantments", WardsConfigDefaults.FORTITUDE_ENCHANTMENTS);
 		fireEnchantments = COMMON_BUILDER.comment("Fire Enchantments").define("fireEnchantments", WardsConfigDefaults.FIRE_ENCHANTMENTS);
 		waterEnchantments = COMMON_BUILDER.comment("Water Enchantments").define("waterEnchantments", WardsConfigDefaults.WATER_ENCHANTMENTS);
