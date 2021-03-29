@@ -4,6 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WardsConfigDefaults {
+	
+	public static final int TARGET_CAP = 3;
+	public static final int DAMAGE_COST = 35;
+	public static final int BUFF_COST = 35;
+	public static final int MAX_POWER = 100000;
+	
 	public static final List<String> ACCEPTED_ITEMS = new ArrayList<String>();
 	public static final List<String> POWER_SOURCES = new ArrayList<String>();
 	public static final List<String> COMBAT_ENCHANTMENTS = new ArrayList<String>();

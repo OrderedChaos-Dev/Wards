@@ -37,7 +37,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 
 	private ItemStack book;
 	private int power;
-	private int maxPower = 100000;
+	private int maxPower = WardsConfig.maxPower.get();
 	
 	private boolean canWard;
 	
@@ -51,6 +51,8 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	public float bookRotation;
 	public float bookRotationPrev;
 	public float tRot;
+	
+	public static int targetCap = WardsConfig.targetCap.get();
 	
 	public WardTileEntity() {
 		super(WardsRegistryManager.ward_te);
@@ -132,7 +134,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 					if(this.getWorld().getGameTime() % wardType.getInterval() == 0) {
 						List<LivingEntity> entities = this.getWorld().getEntitiesWithinAABB(LivingEntity.class, wardArea);
 						for(LivingEntity target : entities) {
-							if(limit >= 3)
+							if(limit >= targetCap)
 								break;
 							if(canSeeTarget(this, target)) {
 								if(this.getWorld().isRemote) {
@@ -175,7 +177,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 						if (this.getWorld().getGameTime() % (wardType2.getInterval() * 1.5) == 0) {
 							List<LivingEntity> entities = this.getWorld().getEntitiesWithinAABB(LivingEntity.class, wardArea);
 							for (LivingEntity target : entities) {
-								if(limit >= 3)
+								if(limit >= targetCap)
 									break;
 								if(canSeeTarget(this, target)) {
 									if(this.getWorld().isRemote) {

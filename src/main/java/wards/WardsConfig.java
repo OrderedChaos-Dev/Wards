@@ -12,6 +12,11 @@ public class WardsConfig {
 	private static final ForgeConfigSpec.Builder COMMON_BUILDER = new ForgeConfigSpec.Builder();
 	public static ForgeConfigSpec COMMON_CONFIG;
 	
+	public static ForgeConfigSpec.ConfigValue<Integer> targetCap;
+	public static ForgeConfigSpec.ConfigValue<Integer> damageCost;
+	public static ForgeConfigSpec.ConfigValue<Integer> buffCost;
+	public static ForgeConfigSpec.ConfigValue<Integer> maxPower;
+	
 	public static ForgeConfigSpec.ConfigValue<List<String>> acceptedItems;
 	public static ForgeConfigSpec.ConfigValue<List<String>> powerSources;
 	
@@ -29,15 +34,22 @@ public class WardsConfig {
 	
 	static {		
 		COMMON_BUILDER.comment("Wards Settings").push("Wards");
+		COMMON_BUILDER.comment("Functions").push("Functions");
+		targetCap = COMMON_BUILDER.comment("Target limit - only affects mobs").defineInRange("targetCap", WardsConfigDefaults.TARGET_CAP, 0, 1000000000);
+		damageCost = COMMON_BUILDER.comment("Power cost to damage mobs").defineInRange("damageCost", WardsConfigDefaults.DAMAGE_COST, 0, 1000000000);
+		buffCost = COMMON_BUILDER.comment("Power cost to buff players").defineInRange("buffCost", WardsConfigDefaults.BUFF_COST, 0, 1000000000);
+		maxPower = COMMON_BUILDER.comment("Maximum amount of power a ward can hold").defineInRange("maxPower", WardsConfigDefaults.MAX_POWER, 0, 1000000000);
+		
+		COMMON_BUILDER.pop();
+		
 		COMMON_BUILDER.comment("Items").push("Items");
 
 		acceptedItems = COMMON_BUILDER.comment("Accepted Items").define("acceptedItems",WardsConfigDefaults.ACCEPTED_ITEMS);
-		powerSources = COMMON_BUILDER.comment("Power Sources").define("powerSources",WardsConfigDefaults.POWER_SOURCES);
+		powerSources = COMMON_BUILDER.comment("Power Sources, Format = [item-fuel]").define("powerSources",WardsConfigDefaults.POWER_SOURCES);
 		
 		COMMON_BUILDER.pop();
 		COMMON_BUILDER.comment("Enchantments").push("Enchantments");
-		combatEnchantments = COMMON_BUILDER.comment("Combat Enchantments").define("combatEnchantments", WardsConfigDefaults.POWER_SOURCES);
-		
+		combatEnchantments = COMMON_BUILDER.comment("Combat Enchantments").define("combatEnchantments", WardsConfigDefaults.COMBAT_ENCHANTMENTS);
 		fortitudeEnchantments = COMMON_BUILDER.comment("Fortitude Enchantments").define("fortitudeEnchantments", WardsConfigDefaults.FORTITUDE_ENCHANTMENTS);
 		fireEnchantments = COMMON_BUILDER.comment("Fire Enchantments").define("fireEnchantments", WardsConfigDefaults.FIRE_ENCHANTMENTS);
 		waterEnchantments = COMMON_BUILDER.comment("Water Enchantments").define("waterEnchantments", WardsConfigDefaults.WATER_ENCHANTMENTS);
