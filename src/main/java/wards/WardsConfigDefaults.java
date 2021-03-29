@@ -56,6 +56,17 @@ public class WardsConfigDefaults {
 		addTo(KNOWLEDGE_ENCHANTMENTS, "ma-enchants:timeless", "ma-enchants:stone_mending", "ma-enchants:lumberjack",
 				"ma-enchants:wisdom", "ma-enchants:step_assist", "ma-enchants:night_vision", "ma-enchants:timeless", "ma-enchants:multi_jump");
 		addTo(CURSE_ENCHANTMENTS, "ma-enchants:curse_breaking", "ma-enchants:curse_butterfingers", "ma-enchants:curse_aquaphobia", "ma-enchants:curse_death");
+		
+		//ENSORCELLATION
+		addTo(COMBAT_ENCHANTMENTS, "ensorcellation:cavalier", "ensorcellation:magic_edge", "ensorcellation:instigating", "ensorcellation:vorpal", "ensorcellation:trueshot", "ensorcellation:volley", "ensorcellation:bulwark", "ensorcellation:air_affinity");
+		addTo(FORTITUDE_ENCHANTMENTS, "ensorcellation:magic_protection", "ensorcellation:vitality");
+		addTo(FIRE_ENCHANTMENTS, "ensorcellation:fire_rebuke");
+		addTo(WATER_ENCHANTMENTS, "ensorcellation:frost_rebuke", "ensorcellation:frost_aspect");
+		addTo(LUCK_ENCHANTMENTS, "ensorcellation:hunter", "ensorcellation:angler");
+		addTo(SLAYER_ENCHANTMENTS, "ensorcellation:damage_ender", "ensorcellation:damage_illager", "ensorcellation:damage_villager", "ensorcellation:leech");
+		addTo(HASTE_ENCHANTMENTS, "ensorcellation:excavating", "ensorcellation:fire_rebuke", "ensorcellation:quick_draw", "ensorcellation:phalanx", "ensorcellation:tilling", "ensorcellation:weeding", "ensorcellation:furrowing");
+		addTo(KNOWLEDGE_ENCHANTMENTS, "ensorcellation:exp_boost", "ensorcellation:reach");
+		addTo(CURSE_ENCHANTMENTS, "ensorcellation:curse_fool", "ensorcellation:curse_mercy");
 	}
 	
 	@SafeVarargs
