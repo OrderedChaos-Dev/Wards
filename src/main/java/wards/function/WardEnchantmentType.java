@@ -40,77 +40,79 @@ public class WardEnchantmentType {
 	}
 	
 	public void expelMagic(WardTileEntity ward, LivingEntity entity, int level) {
-		if(this == COMBAT) {
-			entity.attackEntityFrom(DamageSource.MAGIC, 1.0F + (0.5F * (level - 1)));
-		} else if(this == FORTITUDE) {
-			entity.addPotionEffect(new EffectInstance(Effects.WEAKNESS, 25 * level, Math.min(level, 3)));
-		} else if(this == FIRE) {
-			entity.setFire(level * 2);
-		} else if(this == WATER) {
-			entity.attackEntityFrom(DamageSource.MAGIC, 0.5F + (0.25F * (level - 1)));
-			if(entity.isInWaterRainOrBubbleColumn()) {
+		if(!entity.getEntityWorld().isRemote) {
+			if(this == COMBAT) {
 				entity.attackEntityFrom(DamageSource.MAGIC, 1.0F + (0.5F * (level - 1)));
-			}
-		} else if(this == LUCK) {
-			entity.attackEntityFrom(DamageSource.MAGIC, 0.5F + (0.25F * (level - 1)));
-			if(entity.getEntityWorld().getRandom().nextInt(5) == 0) {
-				int exp = entity.getEntityWorld().getRandom().nextInt(4) + 1;
-				ExperienceOrbEntity orb = new ExperienceOrbEntity(entity.getEntityWorld(), entity.getPosX(), entity.getPosY(), entity.getPosZ(), exp);
-				if(!entity.getEntityWorld().isRemote) {
+			} else if(this == FORTITUDE) {
+				entity.addPotionEffect(new EffectInstance(Effects.WEAKNESS, 25 * level, Math.min(level, 3)));
+			} else if(this == FIRE) {
+				entity.setFire(level * 2);
+			} else if(this == WATER) {
+				entity.attackEntityFrom(DamageSource.MAGIC, 0.5F + (0.25F * (level - 1)));
+				if(entity.isInWaterRainOrBubbleColumn()) {
+					entity.attackEntityFrom(DamageSource.MAGIC, 1.0F + (0.5F * (level - 1)));
+				}
+			} else if(this == LUCK) {
+				entity.attackEntityFrom(DamageSource.MAGIC, 0.5F + (0.25F * (level - 1)));
+				if(entity.getEntityWorld().getRandom().nextInt(5) == 0) {
+					int exp = entity.getEntityWorld().getRandom().nextInt(4) + 1;
+					ExperienceOrbEntity orb = new ExperienceOrbEntity(entity.getEntityWorld(), entity.getPosX(), entity.getPosY(), entity.getPosZ(), exp);
 					entity.getEntityWorld().addEntity(orb);
 				}
-			}
-		} else if(this == DESTRUCTION) {
-			EffectInstance eff = entity.getActivePotionEffect(WardsRegistryManager.tickingExplosion);
-			if(eff != null) {
-				int amp = eff.getAmplifier();
-				if(amp == 1) {
-					entity.getEntityWorld().createExplosion(null, DamageSource.MAGIC, entity.getPosX(), entity.getPosY(), entity.getPosZ(), 0.5F + (0.4F * level), false, Mode.NONE);
-					entity.attackEntityFrom(DamageSource.MAGIC, 1.0F + (0.75F * (level - 1)));
-					entity.removePotionEffect(WardsRegistryManager.tickingExplosion);
+			} else if(this == DESTRUCTION) {
+				EffectInstance eff = entity.getActivePotionEffect(WardsRegistryManager.tickingExplosion);
+				if(eff != null) {
+					int amp = eff.getAmplifier();
+					if(amp == 1) {
+						entity.getEntityWorld().createExplosion(null, DamageSource.MAGIC, null, entity.getPosX(), entity.getPosY(), entity.getPosZ(), 0.5F + (0.4F * level), false, Mode.NONE);
+						entity.attackEntityFrom(DamageSource.MAGIC, 1.0F + (0.75F * (level - 1)));
+						entity.removePotionEffect(WardsRegistryManager.tickingExplosion);
+					} else {
+						entity.addPotionEffect(new EffectInstance(WardsRegistryManager.tickingExplosion, 200, amp + 1));		
+					}
 				} else {
-					entity.addPotionEffect(new EffectInstance(WardsRegistryManager.tickingExplosion, 200, amp + 1));		
+					entity.addPotionEffect(new EffectInstance(WardsRegistryManager.tickingExplosion, 200, 0));
 				}
-			} else {
-				entity.addPotionEffect(new EffectInstance(WardsRegistryManager.tickingExplosion, 200, 0));
+				entity.attackEntityFrom(DamageSource.MAGIC, 0.5F + (0.5F * (level - 1)));
+			} else if(this == SLAYER) {
+				entity.attackEntityFrom(DamageSource.MAGIC, 0.5F + (0.5F * (level - 1)));
+				if(entity.getCreatureAttribute() == CreatureAttribute.ARTHROPOD || entity.getCreatureAttribute() == CreatureAttribute.UNDEAD) {
+					entity.attackEntityFrom(DamageSource.MAGIC, 1.0F + (0.5F * (level - 1)));
+				}
+			} else if(this == HASTE) {
+				entity.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 25 * level, Math.min(level, 3)));
+			} else if(this == KNOWLEDGE) {
+				entity.addPotionEffect(new EffectInstance(Effects.GLOWING, 100, Math.min(level, 3)));
+			} else if(this == CURSE) {
+				entity.addPotionEffect(new EffectInstance(Effects.WITHER, 60, Math.min(level, 3)));
 			}
-			entity.attackEntityFrom(DamageSource.MAGIC, 0.5F + (0.5F * (level - 1)));
-		} else if(this == SLAYER) {
-			entity.attackEntityFrom(DamageSource.MAGIC, 0.5F + (0.5F * (level - 1)));
-			if(entity.getCreatureAttribute() == CreatureAttribute.ARTHROPOD || entity.getCreatureAttribute() == CreatureAttribute.UNDEAD) {
-				entity.attackEntityFrom(DamageSource.MAGIC, 1.0F + (0.5F * (level - 1)));
-			}
-		} else if(this == HASTE) {
-			entity.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 25 * level, Math.min(level, 3)));
-		} else if(this == KNOWLEDGE) {
-			entity.addPotionEffect(new EffectInstance(Effects.GLOWING, 100, Math.min(level, 3)));
-		} else if(this == CURSE) {
-			entity.addPotionEffect(new EffectInstance(Effects.WITHER, 60, Math.min(level, 3)));
 		}
 	}
 	
 	public void empowerPlayer(WardTileEntity ward, PlayerEntity entity, int level) {
-		if(this == COMBAT) {
-			entity.addPotionEffect(new EffectInstance(Effects.STRENGTH, this.getInterval(), Math.min(level, 3)));
-		} else if(this == FORTITUDE) {
-			entity.addPotionEffect(new EffectInstance(Effects.RESISTANCE, this.getInterval(), Math.min(level, 3)));
-		} else if(this == FIRE) {
-			entity.addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE, this.getInterval(), Math.min(level, 3)));
-		} else if(this == WATER) {
-			entity.addPotionEffect(new EffectInstance(Effects.WATER_BREATHING, this.getInterval(), Math.min(level, 3)));
-		} else if(this == LUCK) {
-			entity.addPotionEffect(new EffectInstance(Effects.LUCK, this.getInterval(), Math.min(level, 3)));
-		} else if(this == DESTRUCTION) {
-			entity.addPotionEffect(new EffectInstance(Effects.ABSORPTION, this.getInterval(), Math.min(level, 3)));
-		} else if(this == SLAYER) {
-			entity.addPotionEffect(new EffectInstance(WardsRegistryManager.slayer, this.getInterval(), Math.min(level, 3)));
-		} else if(this == HASTE) {
-			entity.addPotionEffect(new EffectInstance(Effects.SPEED, this.getInterval(), Math.min(level, 3)));
-		} else if(this == KNOWLEDGE) {
-			entity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, this.getInterval(), Math.min(level, 3)));
-			entity.addPotionEffect(new EffectInstance(Effects.INVISIBILITY, this.getInterval(), Math.min(level, 3)));
-		} else if(this == CURSE) {
-			entity.addPotionEffect(new EffectInstance(Effects.POISON, this.getInterval(), Math.min(level, 3)));
+		if(!entity.getEntityWorld().isRemote) {
+			if(this == COMBAT) {
+				entity.addPotionEffect(new EffectInstance(Effects.STRENGTH, this.getInterval(), Math.min(level, 3)));
+			} else if(this == FORTITUDE) {
+				entity.addPotionEffect(new EffectInstance(Effects.RESISTANCE, this.getInterval(), Math.min(level, 3)));
+			} else if(this == FIRE) {
+				entity.addPotionEffect(new EffectInstance(Effects.FIRE_RESISTANCE, this.getInterval(), Math.min(level, 3)));
+			} else if(this == WATER) {
+				entity.addPotionEffect(new EffectInstance(Effects.WATER_BREATHING, this.getInterval(), Math.min(level, 3)));
+			} else if(this == LUCK) {
+				entity.addPotionEffect(new EffectInstance(Effects.LUCK, this.getInterval(), Math.min(level, 3)));
+			} else if(this == DESTRUCTION) {
+				entity.addPotionEffect(new EffectInstance(Effects.ABSORPTION, this.getInterval(), Math.min(level, 3)));
+			} else if(this == SLAYER) {
+				entity.addPotionEffect(new EffectInstance(WardsRegistryManager.slayer, this.getInterval(), Math.min(level, 3)));
+			} else if(this == HASTE) {
+				entity.addPotionEffect(new EffectInstance(Effects.SPEED, this.getInterval(), Math.min(level, 3)));
+			} else if(this == KNOWLEDGE) {
+				entity.addPotionEffect(new EffectInstance(Effects.NIGHT_VISION, this.getInterval(), Math.min(level, 3)));
+				entity.addPotionEffect(new EffectInstance(Effects.INVISIBILITY, this.getInterval(), Math.min(level, 3)));
+			} else if(this == CURSE) {
+				entity.addPotionEffect(new EffectInstance(Effects.POISON, this.getInterval(), Math.min(level, 3)));
+			}
 		}
 	}
 	

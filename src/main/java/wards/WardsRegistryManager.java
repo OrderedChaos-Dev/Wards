@@ -31,7 +31,7 @@ public class WardsRegistryManager {
 	
 	@SubscribeEvent
 	public static void registerBlocks(RegistryEvent.Register<Block> event) {
-		ward = new WardBlock(Block.Properties.create(Material.ROCK).lightValue(10).hardnessAndResistance(5.0F, 40.0F));
+		ward = new WardBlock(Block.Properties.create(Material.ROCK).setLightLevel((state) -> 10).hardnessAndResistance(5.0F, 40.0F));
 		ward.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
 		event.getRegistry().register(ward);
 		

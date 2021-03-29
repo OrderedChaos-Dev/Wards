@@ -43,11 +43,16 @@ public class WardBlock extends ContainerBlock {
 		
 		for(String s : WardsConfig.powerSources.get()) {
 			String[] data = s.split("-");
-			if(data.length == 2) {
-				powerSources.put(data[0], Integer.valueOf(data[1]));
-			} else {
+			try {
+				if(data.length == 2) {
+					powerSources.put(data[0], Integer.valueOf(data[1]));
+				} else {
+					Wards.LOGGER.warn("Warning: invalid token in powerSources config option: " + s);
+				}
+			} catch(Exception e) {
 				Wards.LOGGER.warn("Warning: invalid token in powerSources config option: " + s);
 			}
+
 		}
 	}
 	
@@ -115,11 +120,6 @@ public class WardBlock extends ContainerBlock {
 	@Override
 	public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
 		return SHAPE;
-	}
-
-	@Override
-	public boolean isNormalCube(BlockState state, IBlockReader world, BlockPos pos) {
-		return false;
 	}
 	
 	@Override

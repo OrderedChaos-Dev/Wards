@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
@@ -27,7 +28,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
 import wards.WardsConfig;
 import wards.WardsRegistryManager;
 import wards.function.WardEnchantmentType;
@@ -108,16 +109,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 											&& !((WardTileEntity)this.getWorld().getTileEntity(pos)).getBook().isEmpty()) {
 										this.canWard = false;
 										if(this.getWorld().getGameTime() % 20 == 0 && this.getWorld().isRemote) {
-											double xDiff = (pos.getX() - this.getPos().getX()) / 14.0;
-											double yDiff = (pos.getY() - this.getPos().getY()) / 14.0;
-											double zDiff = (pos.getZ() - this.getPos().getZ()) / 14.0;
-											for (int i = 0; i <= 14.0; i++) {
-												double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
-												double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
-												double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
-
-												this.getWorld().addParticle(RedstoneParticleData.REDSTONE_DUST, true, xCoord, yCoord, zCoord, 0, 0, 0);
-											}
+											this.drawParticlesTo(RedstoneParticleData.REDSTONE_DUST, this.getPos(), pos2, 0, -0.5, 14);
 										}
 									}
 								}
@@ -134,32 +126,26 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 						wardType2 = WardEnchantmentType.fromEnchant(secondaryEnchant);
 					}
 					
+					int limit = 0;
+					
 					//primary enchantment
 					if(this.getWorld().getGameTime() % wardType.getInterval() == 0) {
 						List<LivingEntity> entities = this.getWorld().getEntitiesWithinAABB(LivingEntity.class, wardArea);
 						for(LivingEntity target : entities) {
+							if(limit >= 3)
+								break;
 							if(canSeeTarget(this, target)) {
 								if(this.getWorld().isRemote) {
-									double xDiff = (target.getPosX() - this.getPos().getX() - 0.5) / 14.0; 
-									double yDiff = ((target.getPosY() + (target.getHeight() / 2)) - this.getPos().getY() + 0.5) / 14.0; 
-									double zDiff = (target.getPosZ() - this.getPos().getZ() - 0.5) / 14.0; 
-									for(int i = 0; i <= 14.0; i ++) {
-										double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
-										double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
-										double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
-										
-										if(target instanceof IMob && redstoneStrength == 0) {
-											for(IParticleData particle : wardType.getParticles())  {
-												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-												this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-											}
-										} else if(target instanceof PlayerEntity) {
-											this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0, 0, 0);
-											this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0, 0, 0);
+									if (target instanceof IMob && redstoneStrength == 0) {
+										for (IParticleData particle : wardType.getParticles()) {
+											this.drawParticlesTo(particle, this.getPos(), target.getPosition(), (target.getHeight() / 2) + 0.5D, 0, 14);
 										}
+									} else if (target instanceof PlayerEntity) {
+										this.drawParticlesTo(ParticleTypes.ENCHANT, this.getPos(), target.getPosition(), (target.getHeight() / 2) + 0.5D, 0, 14);
 									}
 								}
 								if(target instanceof IMob && redstoneStrength == 0) {
+									limit++;
 									wardType.expelMagic(this, target, primaryEnchantLevel);
 									this.subtractFuel(35);
 								} else if(target instanceof PlayerEntity) {
@@ -182,30 +168,23 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 						}
 					}
 					
+					limit = 0;
+					
 					//secondary enchantment
 					if(wardType2 != null) {
 						if (this.getWorld().getGameTime() % (wardType2.getInterval() * 1.5) == 0) {
 							List<LivingEntity> entities = this.getWorld().getEntitiesWithinAABB(LivingEntity.class, wardArea);
 							for (LivingEntity target : entities) {
+								if(limit >= 3)
+									break;
 								if(canSeeTarget(this, target)) {
 									if(this.getWorld().isRemote) {
-										double xDiff = (target.getPosX() - this.getPos().getX() - 0.5D) / 14.0D;
-										double yDiff = ((target.getPosY() + (target.getHeight() / 2)) - (this.getPos().getY() + 0.5D)) / 14.0D;
-										double zDiff = (target.getPosZ() - this.getPos().getZ() - 0.5D) / 14.0D;
-										for (int i = 0; i <= 14.0; i++) {
-											double xCoord = this.getPos().getX() + (xDiff * i) + 0.5;
-											double yCoord = this.getPos().getY() + (yDiff * i) + 0.5;
-											double zCoord = this.getPos().getZ() + (zDiff * i) + 0.5;
-
-											if (target instanceof IMob && redstoneStrength == 0) {
-												for (IParticleData particle : wardType2.getParticles()) {
-													this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-													this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-												}
-											} else if (target instanceof PlayerEntity) {
-												this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0,0, 0);
-												this.getWorld().addParticle(ParticleTypes.ENCHANT, true, xCoord, yCoord, zCoord, 0,0, 0);
+										if (target instanceof IMob && redstoneStrength == 0) {
+											for (IParticleData particle : wardType2.getParticles()) {
+												this.drawParticlesTo(particle, this.getPos(), target.getPosition(), (target.getHeight() / 2) + 0.5D, 0, 14);
 											}
+										} else if (target instanceof PlayerEntity) {
+											this.drawParticlesTo(ParticleTypes.ENCHANT, this.getPos(), target.getPosition(), (target.getHeight() / 2) + 0.5D, 0, 14);
 										}
 									}
 								}
@@ -223,6 +202,19 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 		}
 	}
 	
+	public void drawParticlesTo(IParticleData particle, BlockPos source, BlockPos dest, double yOffset, double xzOffset, int increment) {
+		double xDiff = ((dest.getX() - source.getX()) + xzOffset) / increment;
+		double yDiff = (dest.getY() - source.getY()) / increment;
+		double zDiff = ((dest.getZ() - source.getZ()) + xzOffset) / increment;
+		for (int i = 0; i <= increment; i++) {
+			double xCoord = source.getX() + (xDiff * i) + 0.5;
+			double yCoord = source.getY() + (yDiff * i) + 0.5;
+			double zCoord = source.getZ() + (zDiff * i) + 0.5;
+
+			this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+		}
+	}
+	
 	//checks all directions (except down) and sees if the ward can see the target
 	//specifically collision traces for the eyes and feet
 	public boolean canSeeTarget(WardTileEntity ward, Entity entity) {
@@ -235,9 +227,9 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	
 	//need this because ray collision tracing while collide with the ward block itself
 	public boolean canSeeTargetFromSide(Direction direction, Entity entity) {
-		Vec3d wardVec = new Vec3d(this.getPos().getX() + 0.5D, this.getPos().getY() + 0.5D, this.getPos().getZ() + 0.5D);
-		Vec3d entityEyeVec = new Vec3d(entity.getPosX(), entity.getPosYEye(), entity.getPosZ());
-		Vec3d entityFootVec = new Vec3d(entity.getPosX(), entity.getPosY(), entity.getPosZ());
+		Vector3d wardVec = new Vector3d(this.getPos().getX() + 0.5D, this.getPos().getY() + 0.5D, this.getPos().getZ() + 0.5D);
+		Vector3d entityEyeVec = new Vector3d(entity.getPosX(), entity.getPosYEye(), entity.getPosZ());
+		Vector3d entityFootVec = new Vector3d(entity.getPosX(), entity.getPosY(), entity.getPosZ());
 		
 		wardVec = wardVec.add(direction.getXOffset() * 0.4D, direction.getYOffset() * 0.4D, direction.getZOffset() * 0.4D);
 		
@@ -369,8 +361,8 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	}
 	
 	@Override
-	public void read(CompoundNBT compound) {
-		super.read(compound);
+	public void read(BlockState state, CompoundNBT compound) {
+		super.read(state, compound);
 		if(compound.contains("power"))
 			this.power = compound.getInt("power");
 		if(compound.contains("canWard"))
@@ -396,7 +388,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 
 	@Override
 	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-	    this.read(pkt.getNbtCompound());
+	    this.read(this.getBlockState(), pkt.getNbtCompound());
 		this.markDirty();
 		this.getWorld().notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(), 3);
 		this.getWorld().markBlockRangeForRenderUpdate(this.getPos(), this.getBlockState(), this.getBlockState());
