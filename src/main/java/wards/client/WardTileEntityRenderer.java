@@ -18,7 +18,7 @@ import wards.block.WardTileEntity;
 
 @OnlyIn(Dist.CLIENT)
 public class WardTileEntityRenderer extends TileEntityRenderer<WardTileEntity> {
-	public static final RenderMaterial TEXTURE_BOOK = EnchantmentTableTileEntityRenderer.TEXTURE_BOOK;
+	public static final RenderMaterial TEXTURE_BOOK = EnchantmentTableTileEntityRenderer.BOOK_LOCATION;
 	private final BookModel modelBook = new BookModel();
 
 	public WardTileEntityRenderer(TileEntityRendererDispatcher te_rd) {
@@ -27,7 +27,7 @@ public class WardTileEntityRenderer extends TileEntityRenderer<WardTileEntity> {
 
 	@Override
 	public void render(WardTileEntity ward, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int combinedLightIn, int combinedOverlayIn) {
-		matrixStackIn.push();
+		matrixStackIn.pushPose();
 		if(!ward.getBook().isEmpty()) {
 			matrixStackIn.translate(0.5D, 0.85D, 0.5D);
 			float f = (float) ward.tickCount + partialTicks;
@@ -43,16 +43,16 @@ public class WardTileEntityRenderer extends TileEntityRenderer<WardTileEntity> {
 			}
 
 			float f2 = ward.bookRotationPrev + f1 * partialTicks;
-			matrixStackIn.rotate(Vector3f.YP.rotation(-f2));
-			matrixStackIn.rotate(Vector3f.ZP.rotationDegrees(80.0F));
+			matrixStackIn.mulPose(Vector3f.YP.rotation(-f2));
+			matrixStackIn.mulPose(Vector3f.ZP.rotationDegrees(80.0F));
 			float f3 = MathHelper.lerp(partialTicks, ward.pageFlipPrev, ward.pageFlip);
 			float f4 = MathHelper.frac(f3 + 0.25F) * 1.6F - 0.3F;
 			float f5 = MathHelper.frac(f3 + 0.75F) * 1.6F - 0.3F;
 			float f6 = MathHelper.lerp(partialTicks, ward.bookSpreadPrev, ward.bookSpread);
-			this.modelBook.setBookState(f, MathHelper.clamp(f4, 0.0F, 1.0F), MathHelper.clamp(f5, 0.0F, 1.0F), f6);
-			IVertexBuilder ivertexbuilder = TEXTURE_BOOK.getBuffer(bufferIn, RenderType::getEntitySolid);
-			this.modelBook.renderAll(matrixStackIn, ivertexbuilder, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
+			this.modelBook.setupAnim(f, MathHelper.clamp(f4, 0.0F, 1.0F), MathHelper.clamp(f5, 0.0F, 1.0F), f6);
+			IVertexBuilder ivertexbuilder = TEXTURE_BOOK.buffer(bufferIn, RenderType::entitySolid);
+			this.modelBook.render(matrixStackIn, ivertexbuilder, combinedLightIn, combinedOverlayIn, 1.0F, 1.0F, 1.0F, 1.0F);
 		}
-		matrixStackIn.pop();
+		matrixStackIn.popPose();
 	}
 }

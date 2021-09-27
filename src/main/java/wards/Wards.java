@@ -37,7 +37,7 @@ public class Wards {
 	}
 	
 	private void clientSetup(FMLClientSetupEvent event) {
-		RenderTypeLookup.setRenderLayer(WardsRegistryManager.ward, RenderType.getCutoutMipped());
+		RenderTypeLookup.setRenderLayer(WardsRegistryManager.ward, RenderType.cutoutMipped());
 		ClientRegistry.bindTileEntityRenderer(WardsRegistryManager.ward_te, WardTileEntityRenderer::new);
 	}
 	

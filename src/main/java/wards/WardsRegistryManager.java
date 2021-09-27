@@ -31,38 +31,38 @@ public class WardsRegistryManager {
 	
 	@SubscribeEvent
 	public static void registerBlocks(RegistryEvent.Register<Block> event) {
-		ward = new WardBlock(Block.Properties.create(Material.ROCK).setLightLevel((state) -> 10).hardnessAndResistance(5.0F, 40.0F));
+		ward = new WardBlock(Block.Properties.of(Material.STONE).lightLevel((state) -> 10).strength(5.0F, 40.0F));
 		ward.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
 		event.getRegistry().register(ward);
 		
-		BlockItem ward_item = new BlockItem(ward, new Item.Properties().group(WardsItemGroup.INSTANCE));
+		BlockItem ward_item = new BlockItem(ward, new Item.Properties().tab(WardsItemGroup.INSTANCE));
 		ward_item.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
 		ForgeRegistries.ITEMS.register(ward_item);
 	}
 	
 	@SubscribeEvent
 	public static void registerItems(RegistryEvent.Register<Item> event) {
-		enchanted_paper = new Item(new Item.Properties().group(WardsItemGroup.INSTANCE).rarity(Rarity.UNCOMMON)) {
+		enchanted_paper = new Item(new Item.Properties().tab(WardsItemGroup.INSTANCE).rarity(Rarity.UNCOMMON)) {
 			@Override
-			public boolean hasEffect(ItemStack stack) {
+			public boolean isFoil(ItemStack stack) {
 				return true;
 			}
 		};
 		enchanted_paper.setRegistryName(Wards.MOD_ID, "enchanted_paper");
 		event.getRegistry().register(enchanted_paper);
 		
-		broken_ward_core = new Item(new Item.Properties().group(WardsItemGroup.INSTANCE).rarity(Rarity.UNCOMMON));
+		broken_ward_core = new Item(new Item.Properties().tab(WardsItemGroup.INSTANCE).rarity(Rarity.UNCOMMON));
 		broken_ward_core.setRegistryName(Wards.MOD_ID, "broken_ward_core");
 		event.getRegistry().register(broken_ward_core);
 		
-		ward_core = new Item(new Item.Properties().group(WardsItemGroup.INSTANCE).rarity(Rarity.UNCOMMON));
+		ward_core = new Item(new Item.Properties().tab(WardsItemGroup.INSTANCE).rarity(Rarity.UNCOMMON));
 		ward_core.setRegistryName(Wards.MOD_ID, "ward_core");
 		event.getRegistry().register(ward_core);
 	}
 	
 	@SubscribeEvent
 	public static void registerTE(RegistryEvent.Register<TileEntityType<?>> event) {
-		ward_te = TileEntityType.Builder.create(WardTileEntity::new, ward).build(null);
+		ward_te = TileEntityType.Builder.of(WardTileEntity::new, ward).build(null);
 		ward_te.setRegistryName(new ResourceLocation(Wards.MOD_ID, "ward"));
 		event.getRegistry().register(ward_te);
 	}
@@ -87,7 +87,7 @@ public class WardsRegistryManager {
 		}
 
 		@Override
-		public ItemStack createIcon() {
+		public ItemStack makeIcon() {
 			return new ItemStack(ward);
 		}
 	}

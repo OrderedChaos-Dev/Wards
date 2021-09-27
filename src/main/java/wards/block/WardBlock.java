@@ -28,9 +28,9 @@ import wards.WardsConfig;
 
 public class WardBlock extends ContainerBlock {
 	
-	private static final VoxelShape BASE = Block.makeCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D);
-	private static final VoxelShape RAISED_BASE = Block.makeCuboidShape(3.0D, 2.0D, 3.0D, 13.0D, 4.0D, 13.0D);
-	private static final VoxelShape PILLAR = Block.makeCuboidShape(5.0D, 2.0D, 5.0D, 11.0D, 13.0D, 11.0D);
+	private static final VoxelShape BASE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 2.0D, 16.0D);
+	private static final VoxelShape RAISED_BASE = Block.box(3.0D, 2.0D, 3.0D, 13.0D, 4.0D, 13.0D);
+	private static final VoxelShape PILLAR = Block.box(5.0D, 2.0D, 5.0D, 11.0D, 13.0D, 11.0D);
 	private static final VoxelShape SHAPE = VoxelShapes.or(BASE, RAISED_BASE, PILLAR);
 	
 	public static final BooleanProperty ADMIN_MODE = BooleanProperty.create("admin_mode");
@@ -39,7 +39,7 @@ public class WardBlock extends ContainerBlock {
 	
 	public WardBlock(Block.Properties properties) {
 		super(properties);
-		this.setDefaultState(this.stateContainer.getBaseState().with(ADMIN_MODE, false));
+		this.registerDefaultState(this.stateDefinition.any().setValue(ADMIN_MODE, false));
 		
 		for(String s : WardsConfig.powerSources.get()) {
 			String[] data = s.split("-");
@@ -57,14 +57,14 @@ public class WardBlock extends ContainerBlock {
 	}
 	
 	@Override
-	public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult raytraceresult) {
-		if(!world.isRemote) {
-			TileEntity tileentity = world.getTileEntity(pos);
+	public ActionResultType use(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult raytraceresult) {
+		if(!world.isClientSide()) {
+			TileEntity tileentity = world.getBlockEntity(pos);
 			if (tileentity instanceof WardTileEntity) {
-				ItemStack item = player.getHeldItem(hand);
+				ItemStack item = player.getItemInHand(hand);
 				String registryName = item.getItem().getRegistryName().toString();
 				
-				if(!state.get(ADMIN_MODE) || player.canUseCommandBlock()) {
+				if(!state.getValue(ADMIN_MODE) || player.canUseGameMasterBlocks()) {
 					if(powerSources.containsKey(registryName)) {
 						((WardTileEntity)tileentity).addFuel(powerSources.get(registryName), true);
 						if(!player.isCreative())
@@ -77,7 +77,7 @@ public class WardBlock extends ContainerBlock {
 								item.shrink(1);
 						}
 					} else if(item.getItem() == Items.COMMAND_BLOCK) {
-						world.setBlockState(pos, this.getDefaultState().with(ADMIN_MODE, !state.get(ADMIN_MODE)));
+						world.setBlock(pos, this.defaultBlockState().setValue(ADMIN_MODE, !state.getValue(ADMIN_MODE)), 2);
 					} else {
 						((WardTileEntity)tileentity).dropBook();
 					}
@@ -89,22 +89,22 @@ public class WardBlock extends ContainerBlock {
 	}
 	
 	@Override
-	public void onReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving) {
-		TileEntity te = world.getTileEntity(pos);
+	public void onRemove(BlockState state, World world, BlockPos pos, BlockState newState, boolean isMoving) {
+		TileEntity te = world.getBlockEntity(pos);
 		if(te instanceof WardTileEntity) {
 			if(!((WardTileEntity)te).getBook().isEmpty()) {
-				InventoryHelper.spawnItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ((WardTileEntity) te).getBook());
+				InventoryHelper.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ((WardTileEntity) te).getBook());
 			}
 		}
-		super.onReplaced(state, world, pos, newState, isMoving);
+		super.onRemove(state, world, pos, newState, isMoving);
 	}
 	
 	@Override
-	public float getPlayerRelativeBlockHardness(BlockState state, PlayerEntity player, IBlockReader worldIn, BlockPos pos) {
-		if(state.get(ADMIN_MODE))
+	public float getDestroyProgress(BlockState state, PlayerEntity player, IBlockReader worldIn, BlockPos pos) {
+		if(state.getValue(ADMIN_MODE))
 			return -1.0F;
 		else
-			return super.getPlayerRelativeBlockHardness(state, player, worldIn, pos);
+			return super.getDestroyProgress(state, player, worldIn, pos);
 	}
 	
 	@Override
@@ -113,7 +113,7 @@ public class WardBlock extends ContainerBlock {
     }
 	
 	@Override
-	public TileEntity createNewTileEntity(IBlockReader world) {
+	public TileEntity newBlockEntity(IBlockReader world) {
 		return new WardTileEntity();
 	}
 	
@@ -123,12 +123,12 @@ public class WardBlock extends ContainerBlock {
 	}
 	
 	@Override
-	public BlockRenderType getRenderType(BlockState state) {
+	public BlockRenderType getRenderShape(BlockState state) {
 		return BlockRenderType.MODEL;
 	}
 	
 	@Override
-	protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+	protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
 		builder.add(ADMIN_MODE);
 	}
 }

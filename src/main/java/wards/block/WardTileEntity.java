@@ -63,10 +63,10 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 
 	@Override
 	public void tick() {
-		Random rand = this.getWorld().getRandom();
+		Random rand = this.level.getRandom();
 		this.updateBookRotation();
 		
-		boolean adminMode = this.getBlockState().get(WardBlock.ADMIN_MODE);
+		boolean adminMode = this.getBlockState().getValue(WardBlock.ADMIN_MODE);
 		if(adminMode)
 			this.setFuel(this.maxPower);
 		
@@ -91,27 +91,27 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 			}
 			
 			int range = Math.min(5 + (3 * Math.min(4, primaryEnchantLevel)), 15);
-			BlockPos pos1 = this.getPos().add(-range, -range, -range);
-			BlockPos pos2 = this.getPos().add(range, range, range);
+			BlockPos pos1 = this.getBlockPos().offset(-range, -range, -range);
+			BlockPos pos2 = this.getBlockPos().offset(range, range, range);
 			AxisAlignedBB wardArea = new AxisAlignedBB(pos1, pos2);
 			
 			this.canWard = true;
-			int redstoneStrength = this.getWorld().getStrongPower(this.getPos());
+			int redstoneStrength = this.level.getDirectSignalTo(this.getBlockPos());
 			
 			if(!adminMode) {
 				if(redstoneStrength >= 12) {
 					this.canWard = false;
 				} else {
-					for(BlockPos pos : BlockPos.getAllInBoxMutable(pos1, pos2)) {
-						if (!pos.equals(this.getPos())) {
-							if (this.getWorld().getBlockState(pos) == WardsRegistryManager.ward.getDefaultState()) {
-								if(this.getWorld().getTileEntity(pos) instanceof WardTileEntity) {
+					for(BlockPos pos : BlockPos.betweenClosed(pos1, pos2)) {
+						if (!pos.equals(this.getBlockPos())) {
+							if (this.level.getBlockState(pos) == WardsRegistryManager.ward.defaultBlockState()) {
+								if(this.level.getBlockEntity(pos) instanceof WardTileEntity) {
 									//disable if other powered wards nearby
-									if(((WardTileEntity)this.getWorld().getTileEntity(pos)).power > 0
-											&& !((WardTileEntity)this.getWorld().getTileEntity(pos)).getBook().isEmpty()) {
+									if(((WardTileEntity)this.level.getBlockEntity(pos)).power > 0
+											&& !((WardTileEntity)this.level.getBlockEntity(pos)).getBook().isEmpty()) {
 										this.canWard = false;
-										if(this.getWorld().getGameTime() % 20 == 0 && this.getWorld().isRemote) {
-											this.drawParticlesTo(RedstoneParticleData.REDSTONE_DUST, this.getPos(), pos2, 0, -0.5, 14);
+										if(this.level.getGameTime() % 20 == 0 && this.level.isClientSide) {
+											this.drawParticlesTo(RedstoneParticleData.REDSTONE, this.getBlockPos(), pos2, 0, -0.5, 14);
 										}
 									}
 								}
@@ -131,19 +131,19 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 					int limit = 0;
 					
 					//primary enchantment
-					if(this.getWorld().getGameTime() % wardType.getInterval() == 0) {
-						List<LivingEntity> entities = this.getWorld().getEntitiesWithinAABB(LivingEntity.class, wardArea);
+					if(this.level.getGameTime() % wardType.getInterval() == 0) {
+						List<LivingEntity> entities = this.level.getEntitiesOfClass(LivingEntity.class, wardArea);
 						for(LivingEntity target : entities) {
 							if(limit >= targetCap)
 								break;
 							if(canSeeTarget(this, target)) {
-								if(this.getWorld().isRemote) {
+								if(this.level.isClientSide) {
 									if (target instanceof IMob && redstoneStrength == 0) {
 										for (IParticleData particle : wardType.getParticles()) {
-											this.drawParticlesTo(particle, this.getPos(), target.getPosition(), (target.getHeight() / 2) + 0.5D, 0, 14);
+											this.drawParticlesTo(particle, this.getBlockPos(), target.blockPosition(), (target.getBbHeight() / 2) + 0.5D, 0, 14);
 										}
 									} else if (target instanceof PlayerEntity) {
-										this.drawParticlesTo(ParticleTypes.ENCHANT, this.getPos(), target.getPosition(), (target.getHeight() / 2) + 0.5D, 0, 14);
+										this.drawParticlesTo(ParticleTypes.ENCHANT, this.getBlockPos(), target.blockPosition(), (target.getBbHeight() / 2) + 0.5D, 0, 14);
 									}
 								}
 								if(target instanceof IMob && redstoneStrength == 0) {
@@ -158,14 +158,14 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 						}
 					}
 					
-					if(this.getWorld().getGameTime() % 40 == 0 && rand.nextBoolean() && this.getWorld().isRemote) {
+					if(this.level.getGameTime() % 40 == 0 && rand.nextBoolean() && this.level.isClientSide) {
 						for(int i = 0; i < 5 * primaryEnchantLevel; i++) {
 							for(IParticleData particle : wardType.getParticles())  {
-								double xCoord = this.getPos().getX() + 0.5 + 0.25 * (rand.nextDouble() - rand.nextDouble());
-								double zCoord = this.getPos().getZ() + 0.5 + 0.25 * (rand.nextDouble() - rand.nextDouble());
-								double yCoord = this.getPos().getY() + 0.85;
-								this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-								this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+								double xCoord = this.getBlockPos().getX() + 0.5 + 0.25 * (rand.nextDouble() - rand.nextDouble());
+								double zCoord = this.getBlockPos().getZ() + 0.5 + 0.25 * (rand.nextDouble() - rand.nextDouble());
+								double yCoord = this.getBlockPos().getY() + 0.85;
+								this.level.addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+								this.level.addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
 							}
 						}
 					}
@@ -174,19 +174,19 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 					
 					//secondary enchantment
 					if(wardType2 != null) {
-						if (this.getWorld().getGameTime() % (wardType2.getInterval() * 1.5) == 0) {
-							List<LivingEntity> entities = this.getWorld().getEntitiesWithinAABB(LivingEntity.class, wardArea);
+						if (this.level.getGameTime() % (wardType2.getInterval() * 1.5) == 0) {
+							List<LivingEntity> entities = this.level.getEntitiesOfClass(LivingEntity.class, wardArea);
 							for (LivingEntity target : entities) {
 								if(limit >= targetCap)
 									break;
 								if(canSeeTarget(this, target)) {
-									if(this.getWorld().isRemote) {
+									if(this.level.isClientSide) {
 										if (target instanceof IMob && redstoneStrength == 0) {
 											for (IParticleData particle : wardType2.getParticles()) {
-												this.drawParticlesTo(particle, this.getPos(), target.getPosition(), (target.getHeight() / 2) + 0.5D, 0, 14);
+												this.drawParticlesTo(particle, this.getBlockPos(), target.blockPosition(), (target.getBbHeight() / 2) + 0.5D, 0, 14);
 											}
 										} else if (target instanceof PlayerEntity) {
-											this.drawParticlesTo(ParticleTypes.ENCHANT, this.getPos(), target.getPosition(), (target.getHeight() / 2) + 0.5D, 0, 14);
+											this.drawParticlesTo(ParticleTypes.ENCHANT, this.getBlockPos(), target.blockPosition(), (target.getBbHeight() / 2) + 0.5D, 0, 14);
 										}
 									}
 								}
@@ -213,7 +213,7 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 			double yCoord = source.getY() + (yDiff * i) + 0.5;
 			double zCoord = source.getZ() + (zDiff * i) + 0.5;
 
-			this.getWorld().addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+			this.level.addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
 		}
 	}
 	
@@ -229,18 +229,18 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	
 	//need this because ray collision tracing while collide with the ward block itself
 	public boolean canSeeTargetFromSide(Direction direction, Entity entity) {
-		Vector3d wardVec = new Vector3d(this.getPos().getX() + 0.5D, this.getPos().getY() + 0.5D, this.getPos().getZ() + 0.5D);
-		Vector3d entityEyeVec = new Vector3d(entity.getPosX(), entity.getPosYEye(), entity.getPosZ());
-		Vector3d entityFootVec = new Vector3d(entity.getPosX(), entity.getPosY(), entity.getPosZ());
+		Vector3d wardVec = new Vector3d(this.getBlockPos().getX() + 0.5D, this.getBlockPos().getY() + 0.5D, this.getBlockPos().getZ() + 0.5D);
+		Vector3d entityEyeVec = new Vector3d(entity.getX(), entity.getEyeY(), entity.getZ());
+		Vector3d entityFootVec = new Vector3d(entity.getX(), entity.getY(), entity.getZ());
 		
-		wardVec = wardVec.add(direction.getXOffset() * 0.4D, direction.getYOffset() * 0.4D, direction.getZOffset() * 0.4D);
+		wardVec = wardVec.add(direction.getStepX() * 0.4D, direction.getStepY() * 0.4D, direction.getStepZ() * 0.4D);
 		
-		return this.getWorld().rayTraceBlocks(new RayTraceContext(wardVec, entityEyeVec, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS
-				|| this.getWorld().rayTraceBlocks(new RayTraceContext(wardVec, entityFootVec, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS;
+		return this.level.clip(new RayTraceContext(wardVec, entityEyeVec, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS
+				|| this.level.clip(new RayTraceContext(wardVec, entityFootVec, RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, entity)).getType() == RayTraceResult.Type.MISS;
 	}
 	
 	public void updateBookRotation() {
-		Random rand = this.getWorld().getRandom();
+		Random rand = this.level.getRandom();
 		this.bookSpreadPrev = this.bookSpread;
 		this.bookRotationPrev = this.bookRotation;
 		this.tRot += 0.02F;
@@ -298,9 +298,9 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	
 	private void setBook(ItemStack book) {
 		this.book = book;
-		this.markDirty();
-		this.getWorld().notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(), 3);
-		this.getWorld().markBlockRangeForRenderUpdate(this.getPos(), this.getBlockState(), this.getBlockState());
+		this.setChanged();
+		this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
+		this.level.setBlocksDirty(this.getBlockPos(), this.getBlockState(), this.getBlockState());
 	}
 	
 	public boolean replaceBook(ItemStack stack, BlockPos pos) {
@@ -317,7 +317,8 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	
 	public void dropBook() {
 		if(!this.getBook().isEmpty()) {
-			InventoryHelper.spawnItemStack(this.getWorld(), pos.getX(), pos.getY(), pos.getZ(), this.book);
+			BlockPos pos = this.getBlockPos();
+			InventoryHelper.dropItemStack(this.level, pos.getX(), pos.getY(), pos.getZ(), this.book);
 			this.setBook(ItemStack.EMPTY);
 		}
 	}
@@ -342,16 +343,16 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 		int temp = power + value;
 		if(temp <= maxPower) {
 			power = temp;
-			this.markDirty();
-			this.getWorld().notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(), 3);
-			this.getWorld().markBlockRangeForRenderUpdate(this.getPos(), this.getBlockState(), this.getBlockState());
+			this.setChanged();
+			this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
+			this.level.setBlocksDirty(this.getBlockPos(), this.getBlockState(), this.getBlockState());
 			return true;
 		} else {
 			if(fillToMax) {
 				power = maxPower;
-				this.markDirty();
-				this.getWorld().notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(), 3);
-				this.getWorld().markBlockRangeForRenderUpdate(this.getPos(), this.getBlockState(), this.getBlockState());
+				this.setChanged();
+				this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
+				this.level.setBlocksDirty(this.getBlockPos(), this.getBlockState(), this.getBlockState());
 				return true;
 			}
 			return false;
@@ -363,41 +364,41 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	}
 	
 	@Override
-	public void read(BlockState state, CompoundNBT compound) {
-		super.read(state, compound);
+	public void load(BlockState state, CompoundNBT compound) {
+		super.load(state, compound);
 		if(compound.contains("power"))
 			this.power = compound.getInt("power");
 		if(compound.contains("canWard"))
 			this.canWard = compound.getBoolean("canWard");
 		if(compound.contains("book"))
-			this.book = ItemStack.read(compound.getCompound("book"));
+			this.book = ItemStack.of(compound.getCompound("book"));
 	}
 
 	@Override
-	public CompoundNBT write(CompoundNBT compound) {
-		super.write(compound);
+	public CompoundNBT save(CompoundNBT compound) {
+		super.save(compound);
 		compound.putInt("power", this.power);
 		compound.putBoolean("canWard", this.canWard);
-		compound.put("book", this.getBook().write(new CompoundNBT()));
+		compound.put("book", this.getBook().save(new CompoundNBT()));
 		
 		return compound;
 	}
 	
 	@Override
 	public SUpdateTileEntityPacket getUpdatePacket(){
-	    return new SUpdateTileEntityPacket(this.getPos(), 0, getUpdateTag());
+	    return new SUpdateTileEntityPacket(this.getBlockPos(), 0, getUpdateTag());
 	}
 
 	@Override
 	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-	    this.read(this.getBlockState(), pkt.getNbtCompound());
-		this.markDirty();
-		this.getWorld().notifyBlockUpdate(this.getPos(), this.getBlockState(), this.getBlockState(), 3);
-		this.getWorld().markBlockRangeForRenderUpdate(this.getPos(), this.getBlockState(), this.getBlockState());
+	    this.load(this.getBlockState(), pkt.getTag());
+		this.setChanged();
+		this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
+		this.level.setBlocksDirty(this.getBlockPos(), this.getBlockState(), this.getBlockState());
 	}
 	
 	@Override
 	public CompoundNBT getUpdateTag() {
-		return this.write(new CompoundNBT());
+		return this.save(new CompoundNBT());
 	}
 }
