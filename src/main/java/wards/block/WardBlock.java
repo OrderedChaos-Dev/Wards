@@ -96,6 +96,7 @@ public class WardBlock extends ContainerBlock {
 				InventoryHelper.dropItemStack(world, pos.getX(), pos.getY(), pos.getZ(), ((WardTileEntity) te).getBook());
 			}
 		}
+		WardTileEntity.WARD_CACHE.remove(pos);
 		super.onRemove(state, world, pos, newState, isMoving);
 	}
 	

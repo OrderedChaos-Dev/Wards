@@ -1,8 +1,11 @@
 package wards.block;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.enchantment.Enchantment;
@@ -29,18 +32,25 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.world.server.ServerWorld;
 import wards.WardsConfig;
 import wards.WardsRegistryManager;
 import wards.function.WardEnchantmentType;
 
 public class WardTileEntity extends TileEntity implements ITickableTileEntity {
+	
+	/* Holds list of loaded ward block positions for better performance */
+	public static final Set<BlockPos> WARD_CACHE = new HashSet<>();
 
 	private ItemStack book;
 	private int power;
 	private int maxPower = WardsConfig.maxPower.get();
-	
 	private boolean canWard;
+	private Enchantment primaryEnchantment;
+	private Enchantment[] secondaryEnchantments;
+	private int primaryEnchantLevel;
 	
+	/* Client stuff */
 	public int tickCount;
 	public float pageFlip;
 	public float pageFlipPrev;
@@ -63,55 +73,36 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 
 	@Override
 	public void tick() {
-		Random rand = this.level.getRandom();
 		this.updateBookRotation();
 		
-		boolean adminMode = this.getBlockState().getValue(WardBlock.ADMIN_MODE);
-		if(adminMode)
-			this.setFuel(this.maxPower);
-		
-		if(!this.getBook().isEmpty() && this.power > 0) {
-			Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(this.getBook());
-			Enchantment primaryEnchant = null;
-			Enchantment secondaryEnchant = null;
-			int primaryEnchantLevel = 0;
+		if(!this.level.isClientSide) {
+			Random rand = this.level.getRandom();
+			boolean adminMode = this.getBlockState().getValue(WardBlock.ADMIN_MODE);
+			if(adminMode)
+				this.setFuel(this.maxPower);
 			
-			for(Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-				if(primaryEnchant == null) {
-					primaryEnchant = entry.getKey();
-					primaryEnchantLevel = entry.getValue();
-				} else if(secondaryEnchant == null) {
-					secondaryEnchant = entry.getKey();
-				}
-				if(entry.getValue() > primaryEnchantLevel) {
-					secondaryEnchant = primaryEnchant;
-					primaryEnchant = entry.getKey();
-					primaryEnchantLevel = entry.getValue();
-				}
-			}
-			
-			int range = Math.min(5 + (3 * Math.min(4, primaryEnchantLevel)), 15);
-			BlockPos pos1 = this.getBlockPos().offset(-range, -range, -range);
-			BlockPos pos2 = this.getBlockPos().offset(range, range, range);
-			AxisAlignedBB wardArea = new AxisAlignedBB(pos1, pos2);
-			
-			this.canWard = true;
-			int redstoneStrength = this.level.getDirectSignalTo(this.getBlockPos());
-			
-			if(!adminMode) {
-				if(redstoneStrength >= 12) {
-					this.canWard = false;
-				} else {
-					for(BlockPos pos : BlockPos.betweenClosed(pos1, pos2)) {
-						if (!pos.equals(this.getBlockPos())) {
-							if (this.level.getBlockState(pos) == WardsRegistryManager.ward.defaultBlockState()) {
-								if(this.level.getBlockEntity(pos) instanceof WardTileEntity) {
-									//disable if other powered wards nearby
-									if(((WardTileEntity)this.level.getBlockEntity(pos)).power > 0
-											&& !((WardTileEntity)this.level.getBlockEntity(pos)).getBook().isEmpty()) {
-										this.canWard = false;
-										if(this.level.getGameTime() % 20 == 0 && this.level.isClientSide) {
-											this.drawParticlesTo(RedstoneParticleData.REDSTONE, this.getBlockPos(), pos2, 0, -0.5, 14);
+			if(!this.getBook().isEmpty() && this.power > 0) {			
+				int range = Math.min(5 + (3 * Math.min(4, primaryEnchantLevel)), 15); //range cap at 15 TODO: make cap a config option				
+				this.canWard = true;
+				int redstoneStrength = this.level.getDirectSignalTo(this.getBlockPos());
+				
+				if(!adminMode) {
+					if(redstoneStrength >= 12) {
+						this.canWard = false;
+					} else {
+						for(BlockPos cached : WARD_CACHE) {
+							if(!cached.equals(this.getBlockPos())) {
+								if(this.level.isAreaLoaded(cached, 1)) {
+									if(cached.distSqr(this.getBlockPos()) < Math.pow(range, 2)) {
+										if (this.level.getBlockState(cached) == WardsRegistryManager.ward.defaultBlockState()) {
+											if(this.level.getBlockEntity(cached) instanceof WardTileEntity) {
+												if(((WardTileEntity)this.level.getBlockEntity(cached)).power > 0 && !((WardTileEntity)this.level.getBlockEntity(cached)).getBook().isEmpty()) {
+													this.canWard = false;
+													if(this.level.getGameTime() % 20 == 0) {
+														this.drawParticlesTo(RedstoneParticleData.REDSTONE, this.getBlockPos(), cached, 0, -0.5, 14);
+													}
+												}
+											}
 										}
 									}
 								}
@@ -119,82 +110,60 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 						}
 					}
 				}
-			}
-			if(this.canWard) {
-				if(primaryEnchant != null) {
-					WardEnchantmentType wardType = WardEnchantmentType.fromEnchant(primaryEnchant);
-					WardEnchantmentType wardType2 = null;
-					if(secondaryEnchant != null) {
-						wardType2 = WardEnchantmentType.fromEnchant(secondaryEnchant);
-					}
-					
-					int limit = 0;
-					
-					//primary enchantment
-					if(this.level.getGameTime() % wardType.getInterval() == 0) {
-						List<LivingEntity> entities = this.level.getEntitiesOfClass(LivingEntity.class, wardArea);
-						for(LivingEntity target : entities) {
-							if(limit >= targetCap)
-								break;
-							if(canSeeTarget(this, target)) {
-								if(this.level.isClientSide) {
-									if (target instanceof IMob && redstoneStrength == 0) {
-										for (IParticleData particle : wardType.getParticles()) {
-											this.drawParticlesTo(particle, this.getBlockPos(), target.blockPosition(), (target.getBbHeight() / 2) + 0.5D, 0, 14);
-										}
-									} else if (target instanceof PlayerEntity) {
-										this.drawParticlesTo(ParticleTypes.ENCHANT, this.getBlockPos(), target.blockPosition(), (target.getBbHeight() / 2) + 0.5D, 0, 14);
-									}
-								}
-								if(target instanceof IMob && redstoneStrength == 0) {
-									limit++;
-									wardType.expelMagic(this, target, primaryEnchantLevel);
-									this.subtractFuel(35);
-								} else if(target instanceof PlayerEntity) {
-									wardType.empowerPlayer(this, (PlayerEntity)target, primaryEnchantLevel);
-									this.subtractFuel(35);
+				if(this.canWard) {
+					if(primaryEnchantment != null) {
+						WardEnchantmentType wardType = WardEnchantmentType.fromEnchant(primaryEnchantment);
+						WardEnchantmentType wardType2 = null;
+						if(secondaryEnchantments != null && secondaryEnchantments.length > 0) {
+							wardType2 = WardEnchantmentType.fromEnchant(secondaryEnchantments[rand.nextInt(secondaryEnchantments.length)]);
+						}
+						
+						// Spawn enchantment particles around book
+						if(this.level.getGameTime() % 40 == 0 && rand.nextBoolean()) {
+							for(int i = 0; i < 5 * primaryEnchantLevel; i++) {
+								for(IParticleData particle : wardType.getParticles())  {
+									double xCoord = this.getBlockPos().getX() + 0.5 + 0.25 * (rand.nextDouble() - rand.nextDouble());
+									double zCoord = this.getBlockPos().getZ() + 0.5 + 0.25 * (rand.nextDouble() - rand.nextDouble());
+									double yCoord = this.getBlockPos().getY() + 0.85;
+									((ServerWorld)this.level).sendParticles(particle, xCoord, yCoord, zCoord, 2, 0.0, 0.0, 0.0, 0);
 								}
 							}
 						}
-					}
-					
-					if(this.level.getGameTime() % 40 == 0 && rand.nextBoolean() && this.level.isClientSide) {
-						for(int i = 0; i < 5 * primaryEnchantLevel; i++) {
-							for(IParticleData particle : wardType.getParticles())  {
-								double xCoord = this.getBlockPos().getX() + 0.5 + 0.25 * (rand.nextDouble() - rand.nextDouble());
-								double zCoord = this.getBlockPos().getZ() + 0.5 + 0.25 * (rand.nextDouble() - rand.nextDouble());
-								double yCoord = this.getBlockPos().getY() + 0.85;
-								this.level.addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-								this.level.addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
-							}
-						}
-					}
-					
-					limit = 0;
-					
-					//secondary enchantment
-					if(wardType2 != null) {
-						if (this.level.getGameTime() % (wardType2.getInterval() * 1.5) == 0) {
+						
+						int limit = 0;
+						if(this.level.getGameTime() % wardType.getInterval() == 0) {
+							System.out.println(WARD_CACHE);
+							BlockPos pos1 = this.getBlockPos().offset(-range, -range, -range);
+							BlockPos pos2 = this.getBlockPos().offset(range, range, range);
+							AxisAlignedBB wardArea = new AxisAlignedBB(pos1, pos2);
 							List<LivingEntity> entities = this.level.getEntitiesOfClass(LivingEntity.class, wardArea);
-							for (LivingEntity target : entities) {
+							for(LivingEntity target : entities) {
 								if(limit >= targetCap)
 									break;
 								if(canSeeTarget(this, target)) {
-									if(this.level.isClientSide) {
-										if (target instanceof IMob && redstoneStrength == 0) {
+									if(target instanceof IMob && redstoneStrength == 0) {
+										wardType.expelMagic(target, primaryEnchantLevel);
+										limit++;
+										this.subtractFuel(35);
+										for (IParticleData particle : wardType.getParticles()) {
+											this.drawParticlesTo(particle, this.getBlockPos(), target.blockPosition(), target.getEyeHeight(), 0, 14);
+										}
+										if(wardType2 != null && rand.nextBoolean()) {
+											wardType2.expelMagic(target, 1);	
 											for (IParticleData particle : wardType2.getParticles()) {
-												this.drawParticlesTo(particle, this.getBlockPos(), target.blockPosition(), (target.getBbHeight() / 2) + 0.5D, 0, 14);
+												this.drawParticlesTo(particle, this.getBlockPos(), target.blockPosition(), target.getEyeHeight(), 0, 14);
 											}
-										} else if (target instanceof PlayerEntity) {
-											this.drawParticlesTo(ParticleTypes.ENCHANT, this.getBlockPos(), target.blockPosition(), (target.getBbHeight() / 2) + 0.5D, 0, 14);
+										}
+										
+									} else if(target instanceof PlayerEntity) {
+										wardType.empowerPlayer((PlayerEntity)target, primaryEnchantLevel);
+										limit++;
+										this.subtractFuel(35);
+										this.drawParticlesTo(ParticleTypes.ENCHANT, this.getBlockPos(), target.blockPosition(), target.getEyeHeight(), 0, 14);
+										if(wardType2 != null && rand.nextBoolean()) {
+											wardType2.empowerPlayer((PlayerEntity)target, 1);	
 										}
 									}
-								}
-								
-								if(target instanceof IMob && redstoneStrength == 0) {
-									wardType.expelMagic(this, target, primaryEnchantLevel);				
-								} else if(target instanceof PlayerEntity) {
-									wardType.empowerPlayer(this, (PlayerEntity)target, primaryEnchantLevel);
 								}
 							}
 						}
@@ -206,14 +175,14 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 	
 	public void drawParticlesTo(IParticleData particle, BlockPos source, BlockPos dest, double yOffset, double xzOffset, int increment) {
 		double xDiff = ((dest.getX() - source.getX()) + xzOffset) / increment;
-		double yDiff = (dest.getY() - source.getY()) / increment;
+		double yDiff = (dest.getY() - source.getY() + yOffset) / increment;
 		double zDiff = ((dest.getZ() - source.getZ()) + xzOffset) / increment;
 		for (int i = 0; i <= increment; i++) {
 			double xCoord = source.getX() + (xDiff * i) + 0.5;
 			double yCoord = source.getY() + (yDiff * i) + 0.5;
 			double zCoord = source.getZ() + (zDiff * i) + 0.5;
 
-			this.level.addParticle(particle, true, xCoord, yCoord, zCoord, 0, 0, 0);
+			((ServerWorld)this.level).sendParticles(particle, xCoord, yCoord, zCoord, 1, 0.0, 0.0, 0.0, 0);
 		}
 	}
 	
@@ -301,6 +270,29 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 		this.setChanged();
 		this.level.sendBlockUpdated(this.getBlockPos(), this.getBlockState(), this.getBlockState(), 3);
 		this.level.setBlocksDirty(this.getBlockPos(), this.getBlockState(), this.getBlockState());
+		this.updateEnchantments();
+	}
+	
+	private void updateEnchantments() {
+		Map<Enchantment, Integer> enchants = EnchantmentHelper.getEnchantments(this.getBook());
+		primaryEnchantment = null;
+		secondaryEnchantments = null;
+		if(!enchants.isEmpty()) {
+			for(Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+				if(primaryEnchantment == null) {
+					primaryEnchantment = entry.getKey();
+					primaryEnchantLevel = entry.getValue();
+				}
+				if(entry.getValue() > primaryEnchantLevel) {
+					primaryEnchantment = entry.getKey();
+					primaryEnchantLevel = entry.getValue();
+				}
+			}
+			
+			Set<Enchantment> secondaries = new HashSet<>(enchants.keySet());
+			secondaries.remove(primaryEnchantment);
+			secondaryEnchantments = secondaries.toArray(new Enchantment[0]);
+		}
 	}
 	
 	public boolean replaceBook(ItemStack stack, BlockPos pos) {
@@ -370,8 +362,12 @@ public class WardTileEntity extends TileEntity implements ITickableTileEntity {
 			this.power = compound.getInt("power");
 		if(compound.contains("canWard"))
 			this.canWard = compound.getBoolean("canWard");
-		if(compound.contains("book"))
+		if(compound.contains("book")) {
 			this.book = ItemStack.of(compound.getCompound("book"));
+			this.updateEnchantments();
+		}
+		
+		WARD_CACHE.add(this.getBlockPos());
 	}
 
 	@Override

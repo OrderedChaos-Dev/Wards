@@ -13,7 +13,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.world.Explosion.Mode;
 import wards.WardsConfig;
 import wards.WardsRegistryManager;
-import wards.block.WardTileEntity;
 
 public class WardEnchantmentType {
 	
@@ -39,7 +38,7 @@ public class WardEnchantmentType {
 		return this.particles;
 	}
 	
-	public void expelMagic(WardTileEntity ward, LivingEntity entity, int level) {
+	public void expelMagic(LivingEntity entity, int level) {
 		if(!entity.level.isClientSide()) {
 			if(this == COMBAT) {
 				entity.hurt(DamageSource.MAGIC, 1.0F + (0.5F * (level - 1)));
@@ -89,7 +88,7 @@ public class WardEnchantmentType {
 		}
 	}
 	
-	public void empowerPlayer(WardTileEntity ward, PlayerEntity entity, int level) {
+	public void empowerPlayer( PlayerEntity entity, int level) {
 		if(!entity.level.isClientSide()) {
 			if(this == COMBAT) {
 				entity.addEffect(new EffectInstance(Effects.DAMAGE_BOOST, this.getInterval(), Math.min(level, 3)));
